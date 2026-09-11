@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import DayEditorModal from '../components/DayEditorModal';
 import { getPlan, savePlan } from '../storage';
 import { PlanDay, TrainingPlan } from '../types';
-import { formatDisplayDate } from '../utils/dates';
+import { formatCompactDate } from '../utils/dates';
 import { dayCellLabel, dayColor } from '../utils/display';
 
 export default function PlanBuilder() {
@@ -66,7 +66,7 @@ export default function PlanBuilder() {
           <div className="builder-week-title">Week {i + 1}</div>
           {week.map((day) => (
             <div className="builder-day" key={day.date} onClick={() => setEditingDate(day.date)}>
-              <span className="builder-day-date">{formatDisplayDate(day.date)}</span>
+              <span className="builder-day-date">{formatCompactDate(day.date)}</span>
               <span style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                 {day.dayType && (
                   <span className="builder-day-swatch" style={{ background: dayColor(day) }} />

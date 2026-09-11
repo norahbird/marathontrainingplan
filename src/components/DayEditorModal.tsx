@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DayType, PlanDay, RUN_PURPOSES, RunMetric, RunPurpose } from '../types';
-import { formatDisplayDate } from '../utils/dates';
+import { formatCompactDate } from '../utils/dates';
 
 const DESCRIPTION_MAX = 500;
 
@@ -51,7 +51,7 @@ export default function DayEditorModal({ day, onSave, onClose }: Props) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 style={{ margin: 0 }}>{formatDisplayDate(day.date)}</h2>
+          <h2 style={{ margin: 0 }}>{formatCompactDate(day.date)}</h2>
           <button className="modal-close" onClick={onClose}>
             &times;
           </button>

@@ -31,3 +31,7 @@ export function formatDisplayDate(iso: string): string {
 export function formatShortDate(iso: string): string {
   return format(fromISODate(iso), 'MMM d');
 }
+
+export function formatCompactDate(iso: string): string {
+  return format(fromISODate(iso), 'EEE M/d/yy');
+}
