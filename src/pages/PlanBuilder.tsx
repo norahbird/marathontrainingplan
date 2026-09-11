@@ -76,22 +76,13 @@ export default function PlanBuilder() {
           {week.map((day) => (
             <div className="builder-day" key={day.date} onClick={() => setEditingDate(day.date)}>
               <span className="builder-day-date">{formatCompactDate(day.date)}</span>
-              <span style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                {day.dayType && (
-                  <span className="builder-day-swatch" style={{ background: dayColor(day) }} />
-                )}
-                <span className="builder-day-summary">
-                  {day.dayType ? (
-                    day.dayType === 'rest' ? (
-                      'Rest'
-                    ) : (
-                      `${day.run?.purpose} — ${dayCellLabel(day)}`
-                    )
-                  ) : (
-                    'Click to add a run or rest'
-                  )}
+              {day.dayType ? (
+                <span className="builder-day-bubble" style={{ background: dayColor(day) }}>
+                  {day.dayType === 'rest' ? 'Rest' : `${day.run?.purpose} — ${dayCellLabel(day)}`}
                 </span>
-              </span>
+              ) : (
+                <span className="builder-day-summary">Click to add a run or rest</span>
+              )}
             </div>
           ))}
           <div className="builder-week-total">Week total: {formatMiles(weekMiles(week))} miles</div>
