@@ -31,3 +31,7 @@ function formatNumber(n: number | undefined): string {
   if (n === undefined) return '';
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
+
+export function formatMiles(n: number): string {
+  return formatNumber(Math.round(n * 10) / 10);
+}

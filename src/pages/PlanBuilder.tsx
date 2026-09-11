@@ -4,7 +4,7 @@ import DayEditorModal from '../components/DayEditorModal';
 import { getPlan, savePlan } from '../storage';
 import { PlanDay, TrainingPlan } from '../types';
 import { formatCompactDate } from '../utils/dates';
-import { dayCellLabel, dayColor } from '../utils/display';
+import { dayCellLabel, dayColor, formatMiles } from '../utils/display';
 
 export default function PlanBuilder() {
   const { planId } = useParams();
@@ -34,6 +34,15 @@ export default function PlanBuilder() {
   const weeks: PlanDay[][] = [];
   for (let i = 0; i < plan.days.length; i += 7) {
     weeks.push(plan.days.slice(i, i + 7));
+  }
+
+  function weekMiles(week: PlanDay[]): number {
+    return week.reduce((total, day) => {
+      if (day.dayType === 'run' && day.run?.metric === 'distance' && day.run.distanceMiles) {
+        return total + day.run.distanceMiles;
+      }
+      return total;
+    }, 0);
   }
 
   function updateDay(updated: PlanDay) {
@@ -85,6 +94,7 @@ export default function PlanBuilder() {
               </span>
             </div>
           ))}
+          <div className="builder-week-total">Week total: {formatMiles(weekMiles(week))} miles</div>
         </div>
       ))}
 
