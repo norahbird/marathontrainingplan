@@ -2,7 +2,7 @@ import { useState } from 'react';
 import LogEditor from '../components/LogEditor';
 import { PlanDay, RunLog, TrainingPlan } from '../types';
 import { formatDisplayDate } from '../utils/dates';
-import { dayCellLabel, dayColor } from '../utils/display';
+import { dayCellLabel, dayColor, raceDayDistanceText, RACE_DAY_TAG } from '../utils/display';
 
 interface Props {
   plan: TrainingPlan;
@@ -32,9 +32,11 @@ export default function ScrollView({ plan, onUpdateDay }: Props) {
             <div className="log-item-header" onClick={() => setExpanded(isOpen ? null : day.date)}>
               <span className="log-item-date">{formatDisplayDate(day.date)}</span>
               <span className="log-item-tag" style={{ background: dayColor(day) }}>
-                {day.dayType === 'rest' ? 'Rest' : day.run?.purpose ?? '—'}
+                {day.dayType === 'rest' ? 'Rest' : day.dayType === 'race' ? RACE_DAY_TAG : day.run?.purpose ?? '—'}
               </span>
-              <span className="log-item-amount">{dayCellLabel(day)}</span>
+              <span className="log-item-amount">
+                {day.dayType === 'race' ? raceDayDistanceText(plan.raceDistance) : dayCellLabel(day)}
+              </span>
               <span className="log-item-status">{statusLabel(day)}</span>
             </div>
 

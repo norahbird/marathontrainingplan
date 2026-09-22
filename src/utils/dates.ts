@@ -1,5 +1,5 @@
-import { addDays, format, parseISO } from 'date-fns';
-import type { PlanDay } from '../types';
+import { addDays, format, getDay, parseISO } from 'date-fns';
+import type { PlanDay, WeekStartsOn } from '../types';
 
 export function toISODate(d: Date): string {
   return format(d, 'yyyy-MM-dd');
@@ -21,6 +21,7 @@ export function buildPlanDays(raceDateISO: string, lengthWeeks: number): PlanDay
   for (let i = 0; i < totalDays; i++) {
     days.push({ date: toISODate(addDays(startDate, i)) });
   }
+  days[days.length - 1].dayType = 'race';
   return days;
 }
 
@@ -54,4 +55,29 @@ export function rebuildPlanDays(
   const droppedFilled = existingDays.filter((d) => !newDateSet.has(d.date) && d.dayType).length;
 
   return { days, droppedFilled };
+}
+
+/**
+ * Groups plan days into calendar weeks that start on the given weekday.
+ * The first and/or last group may be a partial week if the plan's date
+ * range doesn't line up with that weekday.
+ */
+export function groupIntoWeeks(days: PlanDay[], weekStartsOn: WeekStartsOn): PlanDay[][] {
+  const weeks: PlanDay[][] = [];
+  let current: PlanDay[] = [];
+  days.forEach((day, idx) => {
+    if (idx > 0 && getDay(fromISODate(day.date)) === weekStartsOn) {
+      weeks.push(current);
+      current = [];
+    }
+    current.push(day);
+  });
+  if (current.length) weeks.push(current);
+  return weeks;
+}
+
+const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export function weekdayLabels(weekStartsOn: WeekStartsOn): string[] {
+  return [...WEEKDAY_LABELS.slice(weekStartsOn), ...WEEKDAY_LABELS.slice(0, weekStartsOn)];
 }

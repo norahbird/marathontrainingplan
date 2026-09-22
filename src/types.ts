@@ -31,14 +31,17 @@ export interface RunLog {
   intervalTimes?: string[];
 }
 
-export type DayType = 'run' | 'rest';
+export type DayType = 'run' | 'rest' | 'race';
 
 export interface PlanDay {
   date: string; // ISO yyyy-MM-dd
-  dayType?: DayType; // undefined until set in the builder
+  dayType?: DayType; // undefined until set in the builder; 'race' is set automatically
   run?: PlannedRun; // present when dayType === 'run'
   log?: RunLog;
 }
+
+/** 0 = Sunday, 1 = Monday (matches date-fns' weekStartsOn). */
+export type WeekStartsOn = 0 | 1;
 
 export interface TrainingPlan {
   id: string;
@@ -49,6 +52,7 @@ export interface TrainingPlan {
   goalTime: string;
   lengthWeeks: number;
   runDaysPerWeek: number;
+  weekStartsOn: WeekStartsOn;
   createdAt: string;
   finalized: boolean;
   days: PlanDay[];

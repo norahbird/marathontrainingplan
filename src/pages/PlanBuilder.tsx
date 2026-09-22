@@ -4,8 +4,9 @@ import DayEditorModal from '../components/DayEditorModal';
 import EditPlanSettingsModal from '../components/EditPlanSettingsModal';
 import { getPlan, savePlan } from '../storage';
 import { PlanDay, TrainingPlan } from '../types';
-import { formatCompactDate, rebuildPlanDays } from '../utils/dates';
-import { dayCellLabel, dayColor, formatMiles } from '../utils/display';
+import { formatCompactDate, groupIntoWeeks, rebuildPlanDays } from '../utils/dates';
+import { dayCellLabel, dayColor, formatMiles, raceDayLabel } from '../utils/display';
+import { RACE_DISTANCE_MILES } from '../utils/pace';
 
 export default function PlanBuilder() {
   const { planId } = useParams();
@@ -33,15 +34,16 @@ export default function PlanBuilder() {
   const daysDone = plan.days.filter((d) => d.dayType).length;
   const allDone = daysDone === plan.days.length;
 
-  const weeks: PlanDay[][] = [];
-  for (let i = 0; i < plan.days.length; i += 7) {
-    weeks.push(plan.days.slice(i, i + 7));
-  }
+  const weeks = groupIntoWeeks(plan.days, plan.weekStartsOn ?? 0);
+  const raceDayMiles = RACE_DISTANCE_MILES[plan.raceDistance] ?? 0;
 
   function weekMiles(week: PlanDay[]): number {
     return week.reduce((total, day) => {
       if (day.dayType === 'run' && day.run?.metric === 'distance' && day.run.distanceMiles) {
         return total + day.run.distanceMiles;
+      }
+      if (day.dayType === 'race') {
+        return total + raceDayMiles;
       }
       return total;
     }, 0);
@@ -95,18 +97,29 @@ export default function PlanBuilder() {
       {weeks.map((week, i) => (
         <div className="builder-week" key={i}>
           <div className="builder-week-title">Week {i + 1}</div>
-          {week.map((day) => (
-            <div className="builder-day" key={day.date} onClick={() => setEditingDate(day.date)}>
-              <span className="builder-day-date">{formatCompactDate(day.date)}</span>
-              {day.dayType ? (
-                <span className="builder-day-bubble" style={{ background: dayColor(day) }}>
-                  {day.dayType === 'rest' ? 'Rest' : `${day.run?.purpose} — ${dayCellLabel(day)}`}
-                </span>
-              ) : (
-                <span className="builder-day-summary">Click to add a run or rest</span>
-              )}
-            </div>
-          ))}
+          {week.map((day) => {
+            const isRaceDay = day.dayType === 'race';
+            return (
+              <div
+                className={`builder-day${isRaceDay ? ' builder-day--race' : ''}`}
+                key={day.date}
+                onClick={isRaceDay ? undefined : () => setEditingDate(day.date)}
+              >
+                <span className="builder-day-date">{formatCompactDate(day.date)}</span>
+                {isRaceDay ? (
+                  <span className="builder-day-bubble" style={{ background: dayColor(day) }}>
+                    {raceDayLabel(plan.raceDistance)}
+                  </span>
+                ) : day.dayType ? (
+                  <span className="builder-day-bubble" style={{ background: dayColor(day) }}>
+                    {day.dayType === 'rest' ? 'Rest' : `${day.run?.purpose} — ${dayCellLabel(day)}`}
+                  </span>
+                ) : (
+                  <span className="builder-day-summary">Click to add a run or rest</span>
+                )}
+              </div>
+            );
+          })}
           <div className="builder-week-total">Week total: {formatMiles(weekMiles(week))} miles</div>
         </div>
       ))}

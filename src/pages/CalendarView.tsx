@@ -11,19 +11,25 @@ import {
 } from 'date-fns';
 import { useState } from 'react';
 import { PlanDay, TrainingPlan } from '../types';
-import { fromISODate, toISODate } from '../utils/dates';
-import { dayCellLabel, dayColor, PURPOSE_COLORS, REST_COLOR } from '../utils/display';
-
-const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+import { fromISODate, toISODate, weekdayLabels } from '../utils/dates';
+import {
+  dayCellLabel,
+  dayColor,
+  PURPOSE_COLORS,
+  raceDayLabel,
+  RACE_DAY_COLOR,
+  REST_COLOR,
+} from '../utils/display';
 
 export default function CalendarView({ plan }: { plan: TrainingPlan }) {
+  const weekStartsOn = plan.weekStartsOn ?? 0;
   const firstDay = fromISODate(plan.days[0].date);
   const [monthCursor, setMonthCursor] = useState(startOfMonth(firstDay));
 
   const dayByDate = new Map<string, PlanDay>(plan.days.map((d) => [d.date, d]));
 
-  const gridStart = startOfWeek(startOfMonth(monthCursor));
-  const gridEnd = endOfWeek(endOfMonth(monthCursor));
+  const gridStart = startOfWeek(startOfMonth(monthCursor), { weekStartsOn });
+  const gridEnd = endOfWeek(endOfMonth(monthCursor), { weekStartsOn });
   const gridDays = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
   return (
@@ -39,7 +45,7 @@ export default function CalendarView({ plan }: { plan: TrainingPlan }) {
       </div>
 
       <div className="calendar-grid">
-        {WEEKDAY_LABELS.map((w) => (
+        {weekdayLabels(weekStartsOn).map((w) => (
           <div className="calendar-weekday" key={w}>
             {w}
           </div>
@@ -55,7 +61,7 @@ export default function CalendarView({ plan }: { plan: TrainingPlan }) {
                   <span className="calendar-cell-date">{format(date, 'd')}</span>
                   {day?.dayType && (
                     <span className="calendar-cell-bubble" style={{ background: dayColor(day) }}>
-                      {dayCellLabel(day)}
+                      {day.dayType === 'race' ? raceDayLabel(plan.raceDistance) : dayCellLabel(day)}
                     </span>
                   )}
                 </>
@@ -75,6 +81,10 @@ export default function CalendarView({ plan }: { plan: TrainingPlan }) {
         <span className="legend-item">
           <span className="legend-swatch" style={{ background: REST_COLOR }} />
           Rest
+        </span>
+        <span className="legend-item">
+          <span className="legend-swatch" style={{ background: RACE_DAY_COLOR }} />
+          Race Day
         </span>
       </div>
     </div>

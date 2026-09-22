@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { newPlanId, savePlan } from '../storage';
-import { RACE_DISTANCES, TrainingPlan } from '../types';
+import { RACE_DISTANCES, TrainingPlan, WeekStartsOn } from '../types';
 import { buildPlanDays } from '../utils/dates';
 import { computePaceLabel } from '../utils/pace';
 
@@ -16,6 +16,7 @@ export default function NewPlan() {
   const [goalTime, setGoalTime] = useState('');
   const [lengthWeeks, setLengthWeeks] = useState(16);
   const [runDaysPerWeek, setRunDaysPerWeek] = useState(5);
+  const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(1);
 
   const distance = raceDistance === 'Other' ? customDistance : raceDistance;
   const paceLabel = computePaceLabel(raceDistance, goalTime);
@@ -33,6 +34,7 @@ export default function NewPlan() {
       goalTime: goalTime.trim(),
       lengthWeeks,
       runDaysPerWeek,
+      weekStartsOn,
       createdAt: new Date().toISOString(),
       finalized: false,
       days: buildPlanDays(raceDate, lengthWeeks),
@@ -147,6 +149,30 @@ export default function NewPlan() {
               value={runDaysPerWeek}
               onChange={(e) => setRunDaysPerWeek(Number(e.target.value))}
             />
+          </div>
+        </div>
+
+        <div className="field">
+          <label>Week starts on</label>
+          <div className="radio-group">
+            <label>
+              <input
+                type="radio"
+                name="weekStartsOn"
+                checked={weekStartsOn === 0}
+                onChange={() => setWeekStartsOn(0)}
+              />
+              Sunday
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="weekStartsOn"
+                checked={weekStartsOn === 1}
+                onChange={() => setWeekStartsOn(1)}
+              />
+              Monday
+            </label>
           </div>
         </div>
 
