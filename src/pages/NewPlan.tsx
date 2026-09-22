@@ -37,7 +37,7 @@ export default function NewPlan() {
       weekStartsOn,
       createdAt: new Date().toISOString(),
       finalized: false,
-      days: buildPlanDays(raceDate, lengthWeeks),
+      days: buildPlanDays(raceDate, lengthWeeks, weekStartsOn),
     };
 
     savePlan(plan);

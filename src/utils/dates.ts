@@ -10,13 +10,21 @@ export function fromISODate(s: string): Date {
 }
 
 /**
- * Builds the full list of plan days, ending on the race date (inclusive),
- * spanning lengthWeeks * 7 days.
+ * Builds the full list of plan days, ending on the race date (inclusive).
+ * The plan spans exactly lengthWeeks calendar weeks aligned to weekStartsOn,
+ * so week 1 starts on that weekday and the race date falls within the final
+ * week (which may be a partial week if race day isn't the week's last day).
  */
-export function buildPlanDays(raceDateISO: string, lengthWeeks: number): PlanDay[] {
-  const totalDays = lengthWeeks * 7;
+export function buildPlanDays(
+  raceDateISO: string,
+  lengthWeeks: number,
+  weekStartsOn: WeekStartsOn,
+): PlanDay[] {
   const raceDate = fromISODate(raceDateISO);
+  const daysSinceWeekStart = (getDay(raceDate) - weekStartsOn + 7) % 7;
+  const totalDays = daysSinceWeekStart + (lengthWeeks - 1) * 7 + 1;
   const startDate = addDays(raceDate, -(totalDays - 1));
+
   const days: PlanDay[] = [];
   for (let i = 0; i < totalDays; i++) {
     days.push({ date: toISODate(addDays(startDate, i)) });
@@ -46,8 +54,9 @@ export function rebuildPlanDays(
   existingDays: PlanDay[],
   raceDateISO: string,
   lengthWeeks: number,
+  weekStartsOn: WeekStartsOn,
 ): { days: PlanDay[]; droppedFilled: number } {
-  const newDates = buildPlanDays(raceDateISO, lengthWeeks);
+  const newDates = buildPlanDays(raceDateISO, lengthWeeks, weekStartsOn);
   const oldByDate = new Map(existingDays.map((d) => [d.date, d]));
   const newDateSet = new Set(newDates.map((d) => d.date));
 

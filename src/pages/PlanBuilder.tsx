@@ -67,7 +67,12 @@ export default function PlanBuilder() {
 
   function updateSettings(newWeeks: number, newRunDays: number) {
     if (!plan) return;
-    const { days, droppedFilled } = rebuildPlanDays(plan.days, plan.raceDate, newWeeks);
+    const { days, droppedFilled } = rebuildPlanDays(
+      plan.days,
+      plan.raceDate,
+      newWeeks,
+      plan.weekStartsOn ?? 0,
+    );
     if (droppedFilled > 0) {
       const ok = confirm(
         `Shortening the plan removes ${droppedFilled} day(s) you already scheduled. Continue?`,
