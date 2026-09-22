@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DayEditorModal from '../components/DayEditorModal';
+import EditPlanSettingsModal from '../components/EditPlanSettingsModal';
 import { getPlan, savePlan } from '../storage';
 import { PlanDay, TrainingPlan } from '../types';
-import { formatCompactDate } from '../utils/dates';
+import { formatCompactDate, rebuildPlanDays } from '../utils/dates';
 import { dayCellLabel, dayColor, formatMiles } from '../utils/display';
 
 export default function PlanBuilder() {
@@ -11,6 +12,7 @@ export default function PlanBuilder() {
   const navigate = useNavigate();
   const [plan, setPlan] = useState<TrainingPlan | null>(null);
   const [editingDate, setEditingDate] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (!planId) return;
@@ -61,14 +63,34 @@ export default function PlanBuilder() {
     navigate(`/plan/${plan.id}`);
   }
 
+  function updateSettings(newWeeks: number, newRunDays: number) {
+    if (!plan) return;
+    const { days, droppedFilled } = rebuildPlanDays(plan.days, plan.raceDate, newWeeks);
+    if (droppedFilled > 0) {
+      const ok = confirm(
+        `Shortening the plan removes ${droppedFilled} day(s) you already scheduled. Continue?`,
+      );
+      if (!ok) return;
+    }
+    const newPlan = { ...plan, lengthWeeks: newWeeks, runDaysPerWeek: newRunDays, days };
+    setPlan(newPlan);
+    savePlan(newPlan);
+    setShowSettings(false);
+  }
+
   const editingDay = editingDate ? plan.days.find((d) => d.date === editingDate) ?? null : null;
 
   return (
     <div>
       <h1>{plan.name}</h1>
-      <p className="builder-progress">
-        {daysDone} of {plan.days.length} days scheduled &middot; target {plan.runDaysPerWeek} running days/week
-      </p>
+      <div className="builder-header-row">
+        <p className="builder-progress">
+          {daysDone} of {plan.days.length} days scheduled &middot; target {plan.runDaysPerWeek} running days/week
+        </p>
+        <button className="btn-secondary" onClick={() => setShowSettings(true)}>
+          Edit plan settings
+        </button>
+      </div>
 
       {weeks.map((week, i) => (
         <div className="builder-week" key={i}>
@@ -97,6 +119,15 @@ export default function PlanBuilder() {
 
       {editingDay && (
         <DayEditorModal day={editingDay} onClose={() => setEditingDate(null)} onSave={updateDay} />
+      )}
+
+      {showSettings && (
+        <EditPlanSettingsModal
+          lengthWeeks={plan.lengthWeeks}
+          runDaysPerWeek={plan.runDaysPerWeek}
+          onClose={() => setShowSettings(false)}
+          onSave={updateSettings}
+        />
       )}
     </div>
   );

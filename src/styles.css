@@ -235,8 +235,16 @@ textarea {
 }
 
 /* Plan builder */
-.builder-progress {
+.builder-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 16px;
+}
+
+.builder-progress {
+  margin: 0;
   font-size: 14px;
   color: var(--text-muted);
 }
