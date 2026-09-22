@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import PlanList from './pages/PlanList';
 import NewPlan from './pages/NewPlan';
 import PlanBuilder from './pages/PlanBuilder';
@@ -8,9 +8,9 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <a href="/" className="app-title">
+        <Link to="/" className="app-title">
           Marathon Training Plan
-        </a>
+        </Link>
       </header>
       <main className="app-main">
         <Routes>
