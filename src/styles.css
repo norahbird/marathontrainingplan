@@ -182,6 +182,12 @@ form {
   color: var(--text-muted);
 }
 
+.field-hint {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
 .field-row {
   display: flex;
   gap: 16px;

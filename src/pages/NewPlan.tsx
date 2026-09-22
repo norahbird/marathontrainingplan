@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { newPlanId, savePlan } from '../storage';
 import { RACE_DISTANCES, TrainingPlan } from '../types';
 import { buildPlanDays } from '../utils/dates';
+import { computePaceLabel } from '../utils/pace';
 
 export default function NewPlan() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function NewPlan() {
   const [runDaysPerWeek, setRunDaysPerWeek] = useState(5);
 
   const distance = raceDistance === 'Other' ? customDistance : raceDistance;
+  const paceLabel = computePaceLabel(raceDistance, goalTime);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -117,6 +119,7 @@ export default function NewPlan() {
               value={goalTime}
               onChange={(e) => setGoalTime(e.target.value)}
             />
+            {paceLabel && <span className="field-hint">{paceLabel} pace</span>}
           </div>
         </div>
 
