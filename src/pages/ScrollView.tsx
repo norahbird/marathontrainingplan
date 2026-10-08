@@ -4,6 +4,7 @@ import { PlanDay, RunLog, TrainingPlan } from '../types';
 import { formatDisplayDate, groupIntoWeeks } from '../utils/dates';
 import {
   actualMiles,
+  dayActualMiles,
   dayCellLabel,
   dayColor,
   formatMiles,
@@ -41,6 +42,8 @@ export default function ScrollView({ plan, onUpdateDay }: Props) {
           <div className="log-list">
             {week.map((day) => {
               const isOpen = expanded === day.date;
+              const actual = dayActualMiles(day);
+              const status = statusLabel(day);
               return (
                 <div className="log-item" key={day.date}>
                   <div className="log-item-header" onClick={() => setExpanded(isOpen ? null : day.date)}>
@@ -55,7 +58,14 @@ export default function ScrollView({ plan, onUpdateDay }: Props) {
                     <span className="log-item-amount">
                       {day.dayType === 'race' ? raceDayDistanceText(plan.raceDistance) : dayCellLabel(day)}
                     </span>
-                    <span className="log-item-status">{statusLabel(day)}</span>
+                    {(actual !== undefined || status) && (
+                      <span className="log-item-right">
+                        {actual !== undefined && (
+                          <span className="log-item-actual">Actual: {formatMiles(actual)} miles</span>
+                        )}
+                        {status && <span className="log-item-status">{status}</span>}
+                      </span>
+                    )}
                   </div>
 
                   {isOpen && (

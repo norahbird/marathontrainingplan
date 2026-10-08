@@ -43,19 +43,19 @@ export function plannedMiles(days: PlanDay[], raceDistance: string): number {
 }
 
 /**
- * Actual miles: logged distances for completed runs and extra runs (skipped runs count as 0).
- * A completed run with no distance entered counts its planned distance.
+ * A day's logged miles, or undefined if nothing was run/logged. Skipped runs have none;
+ * a completed run with no distance entered counts its planned distance.
  */
+export function dayActualMiles(day: PlanDay): number | undefined {
+  const log = day.log;
+  if (!log || log.status === 'skipped') return undefined;
+  if (log.actualDistanceMiles !== undefined) return log.actualDistanceMiles;
+  if (log.status === 'completed' && day.run?.metric === 'distance') return day.run.distanceMiles;
+  return undefined;
+}
+
 export function actualMiles(days: PlanDay[]): number {
-  return days.reduce((total, day) => {
-    const log = day.log;
-    if (!log || log.status === 'skipped') return total;
-    if (log.actualDistanceMiles !== undefined) return total + log.actualDistanceMiles;
-    if (log.status === 'completed' && day.run?.metric === 'distance') {
-      return total + (day.run.distanceMiles ?? 0);
-    }
-    return total;
-  }, 0);
+  return days.reduce((total, day) => total + (dayActualMiles(day) ?? 0), 0);
 }
 
 export function dayCellLabel(day: PlanDay): string {
