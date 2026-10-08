@@ -4,9 +4,10 @@ import { LogStatus, PlanDay, RUN_PURPOSES, RunLog, RunPurpose } from '../types';
 interface Props {
   day: PlanDay;
   onSave: (log: RunLog | undefined) => void;
+  onClose: () => void;
 }
 
-export default function LogEditor({ day, onSave }: Props) {
+export default function LogEditor({ day, onSave, onClose }: Props) {
   const isRunDay = day.dayType === 'run';
   const existing = day.log;
 
@@ -77,6 +78,21 @@ export default function LogEditor({ day, onSave }: Props) {
     const next = intervalTimes.filter((_, i) => i !== idx);
     setIntervalTimes(next);
     persist({ intervalTimes: next });
+  }
+
+  function handleSaveAndClose() {
+    persist();
+    onClose();
+  }
+
+  function handleRemoveLog() {
+    const hasDetails =
+      shoes.trim() !== '' || notes.trim() !== '' || intervalTimes.some((t) => t.trim() !== '');
+    if (hasDetails && !confirm('Remove this log? Your shoes, notes, and interval times for this day will be cleared.')) {
+      return;
+    }
+    onSave(undefined);
+    onClose();
   }
 
   return (
@@ -215,6 +231,17 @@ export default function LogEditor({ day, onSave }: Props) {
           )}
         </>
       )}
+
+      <div className="log-actions">
+        {day.log && (
+          <button type="button" className="btn-danger" onClick={handleRemoveLog}>
+            Remove log
+          </button>
+        )}
+        <button type="button" className="btn" onClick={handleSaveAndClose}>
+          Save &amp; close
+        </button>
+      </div>
     </div>
   );
 }

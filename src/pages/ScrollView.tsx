@@ -75,7 +75,11 @@ export default function ScrollView({ plan, onUpdateDay }: Props) {
                       )}
 
                       <div className="log-section-title">Log what actually happened</div>
-                      <LogEditor day={day} onSave={(log) => handleLogChange(day, log)} />
+                      <LogEditor
+                        day={day}
+                        onSave={(log) => handleLogChange(day, log)}
+                        onClose={() => setExpanded(null)}
+                      />
                     </div>
                   )}
                 </div>
