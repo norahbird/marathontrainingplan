@@ -5,8 +5,7 @@ import EditPlanSettingsModal from '../components/EditPlanSettingsModal';
 import { getPlan, savePlan } from '../storage';
 import { PlanDay, TrainingPlan } from '../types';
 import { formatCompactDate, groupIntoWeeks, rebuildPlanDays } from '../utils/dates';
-import { dayCellLabel, dayColor, formatMiles, raceDayLabel } from '../utils/display';
-import { RACE_DISTANCE_MILES } from '../utils/pace';
+import { dayCellLabel, dayColor, formatMiles, plannedMiles, raceDayLabel } from '../utils/display';
 
 export default function PlanBuilder() {
   const { planId } = useParams();
@@ -35,19 +34,6 @@ export default function PlanBuilder() {
   const allDone = daysDone === plan.days.length;
 
   const weeks = groupIntoWeeks(plan.days, plan.weekStartsOn ?? 0);
-  const raceDayMiles = RACE_DISTANCE_MILES[plan.raceDistance] ?? 0;
-
-  function weekMiles(week: PlanDay[]): number {
-    return week.reduce((total, day) => {
-      if (day.dayType === 'run' && day.run?.metric === 'distance' && day.run.distanceMiles) {
-        return total + day.run.distanceMiles;
-      }
-      if (day.dayType === 'race') {
-        return total + raceDayMiles;
-      }
-      return total;
-    }, 0);
-  }
 
   function updateDay(updated: PlanDay) {
     if (!plan) return;
@@ -125,7 +111,7 @@ export default function PlanBuilder() {
               </div>
             );
           })}
-          <div className="builder-week-total">Week total: {formatMiles(weekMiles(week))} miles</div>
+          <div className="builder-week-total">Week total: {formatMiles(plannedMiles(week, plan.raceDistance))} miles</div>
         </div>
       ))}
 

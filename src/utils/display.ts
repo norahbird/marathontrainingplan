@@ -31,6 +31,28 @@ export function raceDayLabel(raceDistance: string): string {
   return `${RACE_DAY_TAG} — ${raceDayDistanceText(raceDistance)}`;
 }
 
+/** Planned miles: distance-based runs plus race day; time-based runs are excluded. */
+export function plannedMiles(days: PlanDay[], raceDistance: string): number {
+  return days.reduce((total, day) => {
+    if (day.dayType === 'run' && day.run?.metric === 'distance' && day.run.distanceMiles) {
+      return total + day.run.distanceMiles;
+    }
+    if (day.dayType === 'race') return total + (RACE_DISTANCE_MILES[raceDistance] ?? 0);
+    return total;
+  }, 0);
+}
+
+/** Actual miles: logged distances for completed runs and extra runs (skipped runs count as 0). */
+export function actualMiles(days: PlanDay[]): number {
+  return days.reduce((total, day) => {
+    const log = day.log;
+    if (log && log.status !== 'skipped' && log.actualDistanceMiles) {
+      return total + log.actualDistanceMiles;
+    }
+    return total;
+  }, 0);
+}
+
 export function dayCellLabel(day: PlanDay): string {
   if (day.dayType === 'rest') return 'Rest';
   if (day.dayType === 'run' && day.run) {

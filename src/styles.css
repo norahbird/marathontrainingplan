@@ -509,8 +509,9 @@ textarea {
 }
 
 .log-item-date {
-  width: 110px;
+  width: 130px;
   flex-shrink: 0;
+  white-space: nowrap;
   font-weight: 600;
   font-size: 13px;
 }
