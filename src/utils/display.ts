@@ -42,12 +42,17 @@ export function plannedMiles(days: PlanDay[], raceDistance: string): number {
   }, 0);
 }
 
-/** Actual miles: logged distances for completed runs and extra runs (skipped runs count as 0). */
+/**
+ * Actual miles: logged distances for completed runs and extra runs (skipped runs count as 0).
+ * A completed run with no distance entered counts its planned distance.
+ */
 export function actualMiles(days: PlanDay[]): number {
   return days.reduce((total, day) => {
     const log = day.log;
-    if (log && log.status !== 'skipped' && log.actualDistanceMiles) {
-      return total + log.actualDistanceMiles;
+    if (!log || log.status === 'skipped') return total;
+    if (log.actualDistanceMiles !== undefined) return total + log.actualDistanceMiles;
+    if (log.status === 'completed' && day.run?.metric === 'distance') {
+      return total + (day.run.distanceMiles ?? 0);
     }
     return total;
   }, 0);

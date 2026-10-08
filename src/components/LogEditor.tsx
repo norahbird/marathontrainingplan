@@ -10,12 +10,17 @@ export default function LogEditor({ day, onSave }: Props) {
   const isRunDay = day.dayType === 'run';
   const existing = day.log;
 
+  const plannedDistance =
+    isRunDay && day.run?.metric === 'distance' ? day.run.distanceMiles : undefined;
+
   const [ranInstead, setRanInstead] = useState(!isRunDay && existing?.status === 'extra_run');
-  const [status, setStatus] = useState<LogStatus>(existing?.status ?? (isRunDay ? 'completed' : 'extra_run'));
+  const [status, setStatus] = useState<LogStatus | null>(existing?.status ?? null);
   const [extraPurpose, setExtraPurpose] = useState<RunPurpose>(existing?.extraPurpose ?? 'General Aerobic');
-  const [actualDistanceMiles, setActualDistanceMiles] = useState<string>(
-    existing?.actualDistanceMiles !== undefined ? String(existing.actualDistanceMiles) : '',
-  );
+  const [actualDistanceMiles, setActualDistanceMiles] = useState<string>(() => {
+    if (existing?.actualDistanceMiles !== undefined) return String(existing.actualDistanceMiles);
+    if (existing?.status === 'completed' && plannedDistance !== undefined) return String(plannedDistance);
+    return '';
+  });
   const [shoes, setShoes] = useState(existing?.shoes ?? '');
   const [notes, setNotes] = useState(existing?.notes ?? '');
   const [intervalTimes, setIntervalTimes] = useState<string[]>(existing?.intervalTimes ?? ['']);
@@ -29,22 +34,25 @@ export default function LogEditor({ day, onSave }: Props) {
       ranInstead: boolean;
       intervalTimes: string[];
       extraPurpose: RunPurpose;
+      actualDistanceMiles: string;
     }> = {},
   ) {
     const nextRanInstead = next.ranInstead ?? ranInstead;
     const nextStatus = next.status ?? status;
     const nextIntervalTimes = next.intervalTimes ?? intervalTimes;
     const nextExtraPurpose = next.extraPurpose ?? extraPurpose;
+    const nextDistance = next.actualDistanceMiles ?? actualDistanceMiles;
 
     if (!isRunDay && !nextRanInstead) {
       onSave(undefined);
       return;
     }
+    if (isRunDay && !nextStatus) return;
 
     const log: RunLog = {
-      status: isRunDay ? nextStatus : 'extra_run',
+      status: isRunDay ? nextStatus! : 'extra_run',
       extraPurpose: isRunDay ? undefined : nextExtraPurpose,
-      actualDistanceMiles: actualDistanceMiles.trim() ? Number(actualDistanceMiles) : undefined,
+      actualDistanceMiles: nextDistance.trim() ? Number(nextDistance) : undefined,
       shoes: shoes.trim() || undefined,
       notes: notes.trim() || undefined,
       intervalTimes:
@@ -99,7 +107,13 @@ export default function LogEditor({ day, onSave }: Props) {
                 checked={status === 'completed'}
                 onChange={() => {
                   setStatus('completed');
-                  persist({ status: 'completed' });
+                  if (!actualDistanceMiles.trim() && plannedDistance !== undefined) {
+                    const prefill = String(plannedDistance);
+                    setActualDistanceMiles(prefill);
+                    persist({ status: 'completed', actualDistanceMiles: prefill });
+                  } else {
+                    persist({ status: 'completed' });
+                  }
                 }}
               />
               Completed
