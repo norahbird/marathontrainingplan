@@ -68,6 +68,21 @@ export function dayCellLabel(day: PlanDay): string {
   return '';
 }
 
+/** Compact calendar label for narrow screens, e.g. "6 mi", "30 min", "Race 13.1 mi". */
+export function dayCellShortLabel(day: PlanDay, raceDistance: string): string {
+  if (day.dayType === 'rest') return 'Rest';
+  if (day.dayType === 'race') {
+    const miles = RACE_DISTANCE_MILES[raceDistance];
+    return miles ? `Race ${formatMiles(miles)} mi` : 'Race';
+  }
+  if (day.dayType === 'run' && day.run) {
+    return day.run.metric === 'distance'
+      ? `${formatNumber(day.run.distanceMiles)} mi`
+      : `${formatNumber(day.run.timeMinutes)} min`;
+  }
+  return '';
+}
+
 function formatNumber(n: number | undefined): string {
   if (n === undefined) return '';
   return Number.isInteger(n) ? String(n) : n.toFixed(1);

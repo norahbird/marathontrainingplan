@@ -96,7 +96,7 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
   }
 
   return (
-    <div>
+    <div className="log-editor">
       {!isRunDay && (
         <div className="field">
           <label>

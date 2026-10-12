@@ -14,6 +14,7 @@ import { PlanDay, TrainingPlan } from '../types';
 import { fromISODate, toISODate, weekdayLabels } from '../utils/dates';
 import {
   dayCellLabel,
+  dayCellShortLabel,
   dayColor,
   PURPOSE_COLORS,
   raceDayLabel,
@@ -61,7 +62,10 @@ export default function CalendarView({ plan }: { plan: TrainingPlan }) {
                   <span className="calendar-cell-date">{format(date, 'd')}</span>
                   {day?.dayType && (
                     <span className="calendar-cell-bubble" style={{ background: dayColor(day) }}>
-                      {day.dayType === 'race' ? raceDayLabel(plan.raceDistance) : dayCellLabel(day)}
+                      <span className="label-full">
+                        {day.dayType === 'race' ? raceDayLabel(plan.raceDistance) : dayCellLabel(day)}
+                      </span>
+                      <span className="label-short">{dayCellShortLabel(day, plan.raceDistance)}</span>
                     </span>
                   )}
                 </>

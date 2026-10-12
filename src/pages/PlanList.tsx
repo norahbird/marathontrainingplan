@@ -1,20 +1,77 @@
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { deletePlan, loadPlans } from '../storage';
+import { deletePlan, exportBackup, importPlans, loadPlans, parseBackup } from '../storage';
 import type { TrainingPlan } from '../types';
-import { formatDisplayDate } from '../utils/dates';
+import { formatDisplayDate, toISODate } from '../utils/dates';
+
+function sortedPlans(): TrainingPlan[] {
+  return loadPlans().sort((a, b) => a.raceDate.localeCompare(b.raceDate));
+}
 
 export default function PlanList() {
   const [plans, setPlans] = useState<TrainingPlan[]>([]);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setPlans(loadPlans().sort((a, b) => a.raceDate.localeCompare(b.raceDate)));
+    setPlans(sortedPlans());
   }, []);
 
   function handleDelete(id: string, name: string) {
     if (!confirm(`Delete "${name}"? This can't be undone.`)) return;
     deletePlan(id);
-    setPlans(loadPlans().sort((a, b) => a.raceDate.localeCompare(b.raceDate)));
+    setPlans(sortedPlans());
+  }
+
+  async function handleExport() {
+    const fileName = `training-plans-${toISODate(new Date())}.json`;
+    const file = new File([exportBackup()], fileName, { type: 'application/json' });
+
+    // On iPhone this opens the share sheet (Save to Files, AirDrop, Messages...).
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Training plan backup' });
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') alert('Sharing the backup failed. Please try again.');
+      }
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleImportFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    let incoming: TrainingPlan[];
+    try {
+      incoming = parseBackup(await file.text());
+    } catch (err) {
+      alert((err as Error).message);
+      return;
+    }
+    if (incoming.length === 0) {
+      alert('That backup has no plans in it.');
+      return;
+    }
+
+    const existingIds = new Set(loadPlans().map((p) => p.id));
+    const replacing = incoming.filter((p) => existingIds.has(p.id)).length;
+    const message =
+      `Import ${incoming.length} plan${incoming.length === 1 ? '' : 's'} from this backup?` +
+      (replacing > 0
+        ? `\n\n${replacing} of them already ${replacing === 1 ? 'exists' : 'exist'} here and will be replaced with the backup's version.`
+        : '');
+    if (!confirm(message)) return;
+
+    importPlans(incoming);
+    setPlans(sortedPlans());
   }
 
   return (
@@ -35,10 +92,10 @@ export default function PlanList() {
                 <div className="plan-card-title">{plan.name}</div>
                 <div className="plan-card-meta">
                   {plan.raceName} ({plan.raceDistance}) &middot; Race day {formatDisplayDate(plan.raceDate)} &middot;{' '}
-                  {plan.lengthWeeks} weeks
+                  {plan.lengthWeeks} {plan.lengthWeeks === 1 ? 'week' : 'weeks'}
                 </div>
               </Link>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div className="plan-card-actions">
                 <span className={`plan-card-badge ${plan.finalized ? 'finalized' : ''}`}>
                   {plan.finalized ? 'Finalized' : `${daysDone}/${plan.days.length} days set`}
                 </span>
@@ -54,6 +111,29 @@ export default function PlanList() {
       <Link to="/new" className="btn">
         + Build a new plan
       </Link>
+
+      <section className="backup-section">
+        <h2>Back up or move your plans</h2>
+        <p>
+          Plans are saved on this device only. To move them to another device or to the Home Screen app,
+          export a backup here and import it there.
+        </p>
+        <div className="backup-actions">
+          <button className="btn-secondary" onClick={handleExport} disabled={plans.length === 0}>
+            Export backup
+          </button>
+          <button className="btn-secondary" onClick={() => fileInput.current?.click()}>
+            Import backup
+          </button>
+          <input
+            ref={fileInput}
+            type="file"
+            accept="application/json,.json"
+            onChange={handleImportFile}
+            hidden
+          />
+        </div>
+      </section>
     </div>
   );
 }
