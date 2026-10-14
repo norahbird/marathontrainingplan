@@ -1,30 +1,49 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { deletePlan, exportBackup, importPlans, loadPlans, parseBackup } from '../storage';
 import type { TrainingPlan } from '../types';
 import { formatDisplayDate, toISODate } from '../utils/dates';
 
-function sortedPlans(): TrainingPlan[] {
-  return loadPlans().sort((a, b) => a.raceDate.localeCompare(b.raceDate));
+async function sortedPlans(): Promise<TrainingPlan[]> {
+  return (await loadPlans()).sort((a, b) => a.raceDate.localeCompare(b.raceDate));
 }
 
 export default function PlanList() {
-  const [plans, setPlans] = useState<TrainingPlan[]>([]);
+  const [plans, setPlans] = useState<TrainingPlan[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setPlans(sortedPlans());
+  const refresh = useCallback(async () => {
+    try {
+      setPlans(await sortedPlans());
+      setLoadError(null);
+    } catch (err) {
+      setLoadError((err as Error).message);
+    }
   }, []);
 
-  function handleDelete(id: string, name: string) {
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  async function handleDelete(id: string, name: string) {
     if (!confirm(`Delete "${name}"? This can't be undone.`)) return;
-    deletePlan(id);
-    setPlans(sortedPlans());
+    setBusy(true);
+    try {
+      await deletePlan(id);
+      await refresh();
+    } catch (err) {
+      alert(`Couldn't delete the plan. ${(err as Error).message}`);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleExport() {
+    if (!plans) return;
     const fileName = `training-plans-${toISODate(new Date())}.json`;
-    const file = new File([exportBackup()], fileName, { type: 'application/json' });
+    const file = new File([exportBackup(plans)], fileName, { type: 'application/json' });
 
     // On iPhone this opens the share sheet (Save to Files, AirDrop, Messages...).
     if (navigator.canShare?.({ files: [file] })) {
@@ -61,17 +80,37 @@ export default function PlanList() {
       return;
     }
 
-    const existingIds = new Set(loadPlans().map((p) => p.id));
+    const existingIds = new Set((plans ?? []).map((p) => p.id));
     const replacing = incoming.filter((p) => existingIds.has(p.id)).length;
     const message =
-      `Import ${incoming.length} plan${incoming.length === 1 ? '' : 's'} from this backup?` +
+      `Import ${incoming.length} plan${incoming.length === 1 ? '' : 's'} from this backup into your account?` +
       (replacing > 0
-        ? `\n\n${replacing} of them already ${replacing === 1 ? 'exists' : 'exist'} here and will be replaced with the backup's version.`
+        ? `\n\n${replacing} of them already ${replacing === 1 ? 'exists' : 'exist'} in your account and will be replaced with the backup's version.`
         : '');
     if (!confirm(message)) return;
 
-    importPlans(incoming);
-    setPlans(sortedPlans());
+    setBusy(true);
+    try {
+      await importPlans(incoming);
+      await refresh();
+    } catch (err) {
+      alert(`Couldn't import the backup. ${(err as Error).message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (plans === null) {
+    return loadError ? (
+      <div className="page-status">
+        <p>Couldn't load your plans. {loadError}</p>
+        <button className="btn-secondary" onClick={refresh}>
+          Try again
+        </button>
+      </div>
+    ) : (
+      <p className="page-status">Loading your plans…</p>
+    );
   }
 
   return (
@@ -99,7 +138,7 @@ export default function PlanList() {
                 <span className={`plan-card-badge ${plan.finalized ? 'finalized' : ''}`}>
                   {plan.finalized ? 'Finalized' : `${daysDone}/${plan.days.length} days set`}
                 </span>
-                <button className="btn-danger" onClick={() => handleDelete(plan.id, plan.name)}>
+                <button className="btn-danger" disabled={busy} onClick={() => handleDelete(plan.id, plan.name)}>
                   Delete
                 </button>
               </div>
@@ -113,17 +152,17 @@ export default function PlanList() {
       </Link>
 
       <section className="backup-section">
-        <h2>Back up or move your plans</h2>
+        <h2>Back up or import plans</h2>
         <p>
-          Plans are saved on this device only. To move them to another device or to the Home Screen app,
-          export a backup here and import it there.
+          Your plans are saved to your account, so they show up on any device you sign in on. Export a backup file
+          any time, or import one, such as plans exported from the old version of this site.
         </p>
         <div className="backup-actions">
-          <button className="btn-secondary" onClick={handleExport} disabled={plans.length === 0}>
+          <button className="btn-secondary" onClick={handleExport} disabled={plans.length === 0 || busy}>
             Export backup
           </button>
-          <button className="btn-secondary" onClick={() => fileInput.current?.click()}>
-            Import backup
+          <button className="btn-secondary" onClick={() => fileInput.current?.click()} disabled={busy}>
+            {busy ? 'Working…' : 'Import backup'}
           </button>
           <input
             ref={fileInput}

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getPlan, savePlan } from '../storage';
-import { PlanDay, TrainingPlan } from '../types';
+import PlanLoadStatus from '../components/PlanLoadStatus';
+import { usePlan } from '../hooks/usePlan';
+import { PlanDay } from '../types';
 import { formatDisplayDate } from '../utils/dates';
 import CalendarView from './CalendarView';
 import ScrollView from './ScrollView';
@@ -11,31 +12,18 @@ type Tab = 'calendar' | 'log';
 export default function PlanView() {
   const { planId } = useParams();
   const navigate = useNavigate();
-  const [plan, setPlan] = useState<TrainingPlan | null>(null);
+  const { plan, state, error, update } = usePlan(planId);
   const [tab, setTab] = useState<Tab>('calendar');
 
   useEffect(() => {
-    if (!planId) return;
-    const p = getPlan(planId);
-    if (!p) {
-      navigate('/');
-      return;
-    }
-    if (!p.finalized) {
-      navigate(`/plan/${p.id}/build`);
-      return;
-    }
-    setPlan(p);
-  }, [planId, navigate]);
+    if (plan && !plan.finalized) navigate(`/plan/${plan.id}/build`, { replace: true });
+  }, [plan, navigate]);
 
-  if (!plan) return null;
+  if (!plan || state !== 'ready') return <PlanLoadStatus state={state} error={error} />;
 
   function handleUpdateDay(updated: PlanDay) {
     if (!plan) return;
-    const newDays = plan.days.map((d) => (d.date === updated.date ? updated : d));
-    const newPlan = { ...plan, days: newDays };
-    setPlan(newPlan);
-    savePlan(newPlan);
+    update({ ...plan, days: plan.days.map((d) => (d.date === updated.date ? updated : d)) });
   }
 
   return (

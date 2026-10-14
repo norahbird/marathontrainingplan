@@ -17,13 +17,14 @@ export default function NewPlan() {
   const [lengthWeeks, setLengthWeeks] = useState(16);
   const [runDaysPerWeek, setRunDaysPerWeek] = useState(5);
   const [weekStartsOn, setWeekStartsOn] = useState<WeekStartsOn>(1);
+  const [submitting, setSubmitting] = useState(false);
 
   const distance = raceDistance === 'Other' ? customDistance : raceDistance;
   const paceLabel = computePaceLabel(raceDistance, goalTime);
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!raceDate || !raceName.trim() || !distance.trim()) return;
+    if (submitting || !raceDate || !raceName.trim() || !distance.trim()) return;
 
     const plan: TrainingPlan = {
       id: newPlanId(),
@@ -40,8 +41,10 @@ export default function NewPlan() {
       days: buildPlanDays(raceDate, lengthWeeks, weekStartsOn),
     };
 
-    savePlan(plan);
-    navigate(`/plan/${plan.id}/build`);
+    setSubmitting(true);
+    const saved = await savePlan(plan);
+    setSubmitting(false);
+    if (saved) navigate(`/plan/${plan.id}/build`);
   }
 
   return (
@@ -177,8 +180,8 @@ export default function NewPlan() {
         </div>
 
         <div className="modal-actions">
-          <button type="submit" className="btn">
-            Next: build the schedule
+          <button type="submit" className="btn" disabled={submitting}>
+            {submitting ? 'Creating…' : 'Next: build the schedule'}
           </button>
         </div>
       </form>

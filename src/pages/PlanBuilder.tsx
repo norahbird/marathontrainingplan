@@ -2,33 +2,25 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DayEditorModal from '../components/DayEditorModal';
 import EditPlanSettingsModal from '../components/EditPlanSettingsModal';
-import { getPlan, savePlan } from '../storage';
-import { PlanDay, TrainingPlan } from '../types';
+import PlanLoadStatus from '../components/PlanLoadStatus';
+import { usePlan } from '../hooks/usePlan';
+import { PlanDay } from '../types';
 import { formatCompactDate, groupIntoWeeks, rebuildPlanDays } from '../utils/dates';
 import { dayCellLabel, dayColor, formatMiles, plannedMiles, raceDayLabel } from '../utils/display';
 
 export default function PlanBuilder() {
   const { planId } = useParams();
   const navigate = useNavigate();
-  const [plan, setPlan] = useState<TrainingPlan | null>(null);
+  const { plan, state, error, update } = usePlan(planId);
   const [editingDate, setEditingDate] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
 
   useEffect(() => {
-    if (!planId) return;
-    const p = getPlan(planId);
-    if (!p) {
-      navigate('/');
-      return;
-    }
-    if (p.finalized) {
-      navigate(`/plan/${p.id}`);
-      return;
-    }
-    setPlan(p);
-  }, [planId, navigate]);
+    if (plan?.finalized) navigate(`/plan/${plan.id}`, { replace: true });
+  }, [plan, navigate]);
 
-  if (!plan) return null;
+  if (!plan || state !== 'ready') return <PlanLoadStatus state={state} error={error} />;
 
   const daysDone = plan.days.filter((d) => d.dayType).length;
   const allDone = daysDone === plan.days.length;
@@ -38,17 +30,16 @@ export default function PlanBuilder() {
   function updateDay(updated: PlanDay) {
     if (!plan) return;
     const newDays = plan.days.map((d) => (d.date === updated.date ? updated : d));
-    const newPlan = { ...plan, days: newDays };
-    setPlan(newPlan);
-    savePlan(newPlan);
+    update({ ...plan, days: newDays });
     setEditingDate(null);
   }
 
-  function handleFinalize() {
+  async function handleFinalize() {
     if (!plan || !allDone) return;
-    const finalized = { ...plan, finalized: true };
-    savePlan(finalized);
-    navigate(`/plan/${plan.id}`);
+    setFinalizing(true);
+    const saved = await update({ ...plan, finalized: true });
+    setFinalizing(false);
+    if (saved) navigate(`/plan/${plan.id}`);
   }
 
   function updateSettings(newWeeks: number, newRunDays: number) {
@@ -65,9 +56,7 @@ export default function PlanBuilder() {
       );
       if (!ok) return;
     }
-    const newPlan = { ...plan, lengthWeeks: newWeeks, runDaysPerWeek: newRunDays, days };
-    setPlan(newPlan);
-    savePlan(newPlan);
+    update({ ...plan, lengthWeeks: newWeeks, runDaysPerWeek: newRunDays, days });
     setShowSettings(false);
   }
 
@@ -116,8 +105,12 @@ export default function PlanBuilder() {
       ))}
 
       <div className="finalize-bar">
-        <button className="btn" disabled={!allDone} onClick={handleFinalize}>
-          {allDone ? 'Finalize Plan' : `Finalize Plan (${plan.days.length - daysDone} days left)`}
+        <button className="btn" disabled={!allDone || finalizing} onClick={handleFinalize}>
+          {finalizing
+            ? 'Finalizing…'
+            : allDone
+              ? 'Finalize Plan'
+              : `Finalize Plan (${plan.days.length - daysDone} days left)`}
         </button>
       </div>
 
