@@ -149,6 +149,11 @@ body {
   color: #1e7a41;
 }
 
+.auth-forgot {
+  font-size: 13px;
+  margin-top: -6px;
+}
+
 .auth-toggle {
   margin-top: 16px;
   align-self: center;

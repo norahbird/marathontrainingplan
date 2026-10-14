@@ -1,6 +1,7 @@
 import { Link, Route, Routes } from 'react-router-dom';
 import AuthScreen from './components/AuthScreen';
 import SaveStatusBanner from './components/SaveStatusBanner';
+import SetNewPasswordScreen from './components/SetNewPasswordScreen';
 import { useAuth } from './context/AuthContext';
 import PlanList from './pages/PlanList';
 import NewPlan from './pages/NewPlan';
@@ -9,10 +10,11 @@ import PlanView from './pages/PlanView';
 import { hasUnsavedChanges } from './storage';
 
 export default function App() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, recoveringPassword, signOut } = useAuth();
 
   if (loading) return <p className="page-status">Loading…</p>;
   if (!user) return <AuthScreen />;
+  if (recoveringPassword) return <SetNewPasswordScreen />;
 
   function handleSignOut() {
     if (hasUnsavedChanges() && !confirm("Some changes haven't been saved yet. Sign out anyway?")) return;
