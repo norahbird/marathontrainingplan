@@ -7,6 +7,8 @@
   --text-muted: #6b7280;
   --accent: #2f6fb3;
   --accent-hover: #255a92;
+  --plan-outline: #e07b1a;
+  --plan-outline-hover: #c0650d;
   --danger: #c0392b;
   --radius: 8px;
 }
@@ -200,16 +202,19 @@ h2 {
   margin-bottom: 24px;
 }
 
+/* Plans are the main thing on the home screen, so they get a bold outline in
+   orange, the complement of the accent blue. */
 .plan-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
   text-decoration: none;
   color: inherit;
+  border: 2px solid var(--plan-outline);
 }
 
 .plan-card:hover {
-  border-color: var(--accent);
+  border-color: var(--plan-outline-hover);
 }
 
 .plan-card-title {
