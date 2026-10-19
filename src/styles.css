@@ -676,6 +676,30 @@ textarea {
   display: none;
 }
 
+.calendar-cell-bubble {
+  background: var(--bubble);
+}
+
+/* Days that have already happened: a light tint of the day's color with dark text, so
+   they stay color-coded and readable but upcoming days stand out. */
+.calendar-cell.past .calendar-cell-date {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.calendar-cell.past .calendar-cell-bubble {
+  background: color-mix(in srgb, var(--bubble) 26%, white);
+  color: var(--text);
+}
+
+.calendar-cell.today {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.calendar-cell.today .calendar-cell-date {
+  color: var(--accent);
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;

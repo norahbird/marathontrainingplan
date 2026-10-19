@@ -83,6 +83,39 @@ export function dayCellShortLabel(day: PlanDay, raceDistance: string): string {
   return '';
 }
 
+export interface CalendarBubble {
+  label: string;
+  shortLabel: string;
+  color: string;
+}
+
+/**
+ * What a calendar day shows: the plan, or once a day is logged, what actually happened.
+ * Skipped runs show as Rest; logged runs show actual miles with a check mark.
+ */
+export function calendarBubble(day: PlanDay, raceDistance: string): CalendarBubble {
+  const log = day.log;
+  if (log?.status === 'skipped') return { label: 'Rest', shortLabel: 'Rest', color: REST_COLOR };
+
+  const planned: CalendarBubble = {
+    label: day.dayType === 'race' ? raceDayLabel(raceDistance) : dayCellLabel(day),
+    shortLabel: dayCellShortLabel(day, raceDistance),
+    color: dayColor(day),
+  };
+  if (!log) return planned;
+
+  const color =
+    log.status === 'extra_run' && day.dayType === 'rest'
+      ? PURPOSE_COLORS[log.extraPurpose ?? 'General Aerobic']
+      : planned.color;
+  const actual = dayActualMiles(day);
+  if (actual !== undefined) {
+    return { label: `✓ ${formatMiles(actual)} miles`, shortLabel: `✓ ${formatMiles(actual)} mi`, color };
+  }
+  // Logged but no distance to show (e.g. a completed time-based run).
+  return { label: `✓ ${planned.label}`, shortLabel: `✓ ${planned.shortLabel}`, color };
+}
+
 function formatNumber(n: number | undefined): string {
   if (n === undefined) return '';
   return Number.isInteger(n) ? String(n) : n.toFixed(1);

@@ -9,18 +9,10 @@ import {
   startOfWeek,
   subMonths,
 } from 'date-fns';
-import { useState } from 'react';
+import { CSSProperties, useState } from 'react';
 import { PlanDay, TrainingPlan } from '../types';
 import { fromISODate, toISODate, weekdayLabels } from '../utils/dates';
-import {
-  dayCellLabel,
-  dayCellShortLabel,
-  dayColor,
-  PURPOSE_COLORS,
-  raceDayLabel,
-  RACE_DAY_COLOR,
-  REST_COLOR,
-} from '../utils/display';
+import { calendarBubble, PURPOSE_COLORS, RACE_DAY_COLOR, REST_COLOR } from '../utils/display';
 
 export default function CalendarView({ plan }: { plan: TrainingPlan }) {
   const weekStartsOn = plan.weekStartsOn ?? 0;
@@ -28,6 +20,7 @@ export default function CalendarView({ plan }: { plan: TrainingPlan }) {
   const [monthCursor, setMonthCursor] = useState(startOfMonth(firstDay));
 
   const dayByDate = new Map<string, PlanDay>(plan.days.map((d) => [d.date, d]));
+  const todayISO = toISODate(new Date());
 
   const gridStart = startOfWeek(startOfMonth(monthCursor), { weekStartsOn });
   const gridEnd = endOfWeek(endOfMonth(monthCursor), { weekStartsOn });
@@ -55,17 +48,17 @@ export default function CalendarView({ plan }: { plan: TrainingPlan }) {
           const iso = toISODate(date);
           const day = dayByDate.get(iso);
           const inMonth = isSameMonth(date, monthCursor);
+          const bubble = day?.dayType ? calendarBubble(day, plan.raceDistance) : null;
+          const timing = iso < todayISO ? 'past' : iso === todayISO ? 'today' : '';
           return (
-            <div key={iso} className={`calendar-cell ${inMonth ? '' : 'empty'}`}>
+            <div key={iso} className={`calendar-cell ${inMonth ? timing : 'empty'}`}>
               {inMonth && (
                 <>
                   <span className="calendar-cell-date">{format(date, 'd')}</span>
-                  {day?.dayType && (
-                    <span className="calendar-cell-bubble" style={{ background: dayColor(day) }}>
-                      <span className="label-full">
-                        {day.dayType === 'race' ? raceDayLabel(plan.raceDistance) : dayCellLabel(day)}
-                      </span>
-                      <span className="label-short">{dayCellShortLabel(day, plan.raceDistance)}</span>
+                  {bubble && (
+                    <span className="calendar-cell-bubble" style={{ '--bubble': bubble.color } as CSSProperties}>
+                      <span className="label-full">{bubble.label}</span>
+                      <span className="label-short">{bubble.shortLabel}</span>
                     </span>
                   )}
                 </>
