@@ -705,6 +705,11 @@ textarea {
   color: var(--text);
 }
 
+/* Logged as less than planned (fewer miles, or a planned run skipped). */
+.calendar-cell-bubble.calendar-cell-bubble--done.calendar-cell-bubble--short {
+  color: #b3261e;
+}
+
 .calendar-cell.today {
   box-shadow: inset 0 0 0 2px var(--accent);
 }

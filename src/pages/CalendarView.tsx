@@ -59,7 +59,7 @@ export default function CalendarView({ plan }: { plan: TrainingPlan }) {
                   <span className="calendar-cell-date">{format(date, 'd')}</span>
                   {bubble && (
                     <span
-                      className={`calendar-cell-bubble ${day?.log ? 'calendar-cell-bubble--done' : ''}`}
+                      className={`calendar-cell-bubble ${day?.log ? 'calendar-cell-bubble--done' : ''} ${bubble.short ? 'calendar-cell-bubble--short' : ''}`}
                       style={{ '--bubble': bubble.color } as CSSProperties}
                     >
                       <span className="label-full">{bubble.label}</span>

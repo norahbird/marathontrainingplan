@@ -54,6 +54,13 @@ export function dayActualMiles(day: PlanDay): number | undefined {
   return undefined;
 }
 
+/** A day's planned miles, or undefined for rest days and time-based runs. */
+export function dayPlannedMiles(day: PlanDay, raceDistance: string): number | undefined {
+  if (day.dayType === 'run' && day.run?.metric === 'distance') return day.run.distanceMiles;
+  if (day.dayType === 'race') return RACE_DISTANCE_MILES[raceDistance];
+  return undefined;
+}
+
 export function actualMiles(days: PlanDay[]): number {
   return days.reduce((total, day) => total + (dayActualMiles(day) ?? 0), 0);
 }
@@ -93,6 +100,8 @@ export interface CalendarBubble {
   label: string;
   shortLabel: string;
   color: string;
+  /** Logged as less than planned: a skipped run, or fewer miles than the plan called for. */
+  short: boolean;
 }
 
 /**
@@ -101,12 +110,15 @@ export interface CalendarBubble {
  */
 export function calendarBubble(day: PlanDay, raceDistance: string): CalendarBubble {
   const log = day.log;
-  if (log?.status === 'skipped') return { label: 'Rest', shortLabel: 'Rest', color: REST_COLOR };
+  if (log?.status === 'skipped') {
+    return { label: 'Rest', shortLabel: 'Rest', color: REST_COLOR, short: day.dayType === 'run' || day.dayType === 'race' };
+  }
 
   const planned: CalendarBubble = {
     label: day.dayType === 'race' ? raceDayLabel(raceDistance) : dayCellLabel(day),
     shortLabel: dayCellShortLabel(day, raceDistance),
     color: dayColor(day),
+    short: false,
   };
   if (!log) return planned;
 
@@ -116,10 +128,13 @@ export function calendarBubble(day: PlanDay, raceDistance: string): CalendarBubb
       : planned.color;
   const actual = dayActualMiles(day);
   if (actual !== undefined) {
-    return { label: `✓ ${formatMiles(actual)} miles`, shortLabel: `${SHORT_CHECK}${formatMiles(actual)}`, color };
+    const target = dayPlannedMiles(day, raceDistance);
+    // Compare at the 0.01 mi precision distances are shown at.
+    const short = target !== undefined && Math.round(actual * 100) < Math.round(target * 100);
+    return { label: `✓ ${formatMiles(actual)} miles`, shortLabel: `${SHORT_CHECK}${formatMiles(actual)}`, color, short };
   }
   // Logged but no distance to show (e.g. a completed time-based run).
-  return { label: `✓ ${planned.label}`, shortLabel: `${SHORT_CHECK}${planned.shortLabel}`, color };
+  return { label: `✓ ${planned.label}`, shortLabel: `${SHORT_CHECK}${planned.shortLabel}`, color, short: false };
 }
 
 export interface LogRowSummary {
