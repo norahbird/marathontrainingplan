@@ -68,16 +68,19 @@ export function dayCellLabel(day: PlanDay): string {
   return '';
 }
 
-/** Compact calendar label for narrow screens, e.g. "6 mi", "30 min", "Race 13.1 mi". */
+/**
+ * Compact calendar label for narrow screens. Distances are bare numbers (miles are implied)
+ * so they fit on one line, e.g. "6", "Race 13.1"; times keep their unit, e.g. "30 min".
+ */
 export function dayCellShortLabel(day: PlanDay, raceDistance: string): string {
   if (day.dayType === 'rest') return 'Rest';
   if (day.dayType === 'race') {
     const miles = RACE_DISTANCE_MILES[raceDistance];
-    return miles ? `Race ${formatMiles(miles)} mi` : 'Race';
+    return miles ? `Race ${formatMiles(miles)}` : 'Race';
   }
   if (day.dayType === 'run' && day.run) {
     return day.run.metric === 'distance'
-      ? `${formatNumber(day.run.distanceMiles)} mi`
+      ? formatNumber(day.run.distanceMiles)
       : `${formatNumber(day.run.timeMinutes)} min`;
   }
   return '';
@@ -110,7 +113,7 @@ export function calendarBubble(day: PlanDay, raceDistance: string): CalendarBubb
       : planned.color;
   const actual = dayActualMiles(day);
   if (actual !== undefined) {
-    return { label: `✓ ${formatMiles(actual)} miles`, shortLabel: `✓ ${formatMiles(actual)} mi`, color };
+    return { label: `✓ ${formatMiles(actual)} miles`, shortLabel: `✓ ${formatMiles(actual)}`, color };
   }
   // Logged but no distance to show (e.g. a completed time-based run).
   return { label: `✓ ${planned.label}`, shortLabel: `✓ ${planned.shortLabel}`, color };

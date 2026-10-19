@@ -923,3 +923,26 @@ textarea {
 .interval-row input {
   flex: 1;
 }
+
+/* Very narrow phones (e.g. original iPhone SE): tighten so "✓ 13.1" still fits on one line.
+   Kept last so it overrides the 600px rules above. */
+@media (max-width: 340px) {
+  .app-main {
+    padding-left: calc(10px + env(safe-area-inset-left));
+    padding-right: calc(10px + env(safe-area-inset-right));
+  }
+
+  .calendar-grid {
+    gap: 2px;
+  }
+
+  .calendar-cell {
+    padding: 3px 2px;
+  }
+
+  .calendar-cell-bubble {
+    padding: 2px 2px;
+    font-size: 9px;
+    letter-spacing: -0.2px;
+  }
+}
