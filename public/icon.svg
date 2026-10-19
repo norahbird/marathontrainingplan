@@ -1,26 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#3a7cc2"/>
-      <stop offset="1" stop-color="#22558f"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" fill="url(#bg)"/>
-  <!-- runner, mid-stride, moving right -->
-  <g fill="none" stroke="#ffffff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="248,316 212,364 148,372"/>
-    <polyline points="248,316 310,356 328,424"/>
-    <line x1="284" y1="214" x2="248" y2="316"/>
-    <polyline points="284,218 232,262 192,240"/>
-    <polyline points="284,218 336,252 376,216"/>
-  </g>
-  <circle cx="306" cy="150" r="40" fill="#ffffff"/>
-  <!-- track: one dash per run type -->
-  <g transform="translate(116 448)">
-    <rect x="0" y="0" width="44" height="18" rx="9" fill="#d4b30a"/>
-    <rect x="59" y="0" width="44" height="18" rx="9" fill="#e07b1a"/>
-    <rect x="118" y="0" width="44" height="18" rx="9" fill="#7d3c9e"/>
-    <rect x="177" y="0" width="44" height="18" rx="9" fill="#c0392b"/>
-    <rect x="236" y="0" width="44" height="18" rx="9" fill="#d6336c"/>
-  </g>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#3a7cc2"/>
+<stop offset="1" stop-color="#22558f"/>
+</linearGradient>
+</defs>
+<rect width="512" height="512" fill="url(#bg)"/>
+<rect x="78" y="197" width="150" height="20" rx="10" fill="#d4b30a"/>
+<rect x="46" y="229" width="182" height="20" rx="10" fill="#e07b1a"/>
+<rect x="88" y="261" width="140" height="20" rx="10" fill="#7d3c9e"/>
+<rect x="56" y="293" width="172" height="20" rx="10" fill="#c0392b"/>
+<rect x="96" y="325" width="132" height="20" rx="10" fill="#d6336c"/>
+<g transform="translate(36 -2) scale(0.9)">
+<path d="M156,348 L156,258 C156,232 170,216 194,216 L220,220 C228,240 250,246 268,234 L296,202 C302,194 314,194 318,204 L332,228 C366,256 404,274 438,288 C460,298 470,308 470,322 L460,348 L156,348 Z" fill="#ffffff"/>
+<path d="M150,344 L420,342 C446,340 462,332 472,322 C482,336 478,356 460,368 C442,380 414,386 386,386 L172,390 C152,390 144,378 146,362 Z" fill="#cfe0f2"/>
+<g stroke="#14304f" stroke-width="10" stroke-linecap="round">
+<line x1="336" y1="232" x2="350" y2="220"/>
+<line x1="358" y1="248" x2="372" y2="236"/>
+<line x1="380" y1="262" x2="394" y2="250"/>
+</g>
+<path d="M194,326 C254,324 300,300 336,252" fill="none" stroke="#3a7cc2" stroke-width="13" stroke-linecap="round"/>
+</g>
 </svg>
