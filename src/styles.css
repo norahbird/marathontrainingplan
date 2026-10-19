@@ -24,6 +24,10 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+button {
+  font-family: inherit;
+}
+
 .app-shell {
   min-height: 100vh;
   display: flex;
@@ -255,7 +259,8 @@ h2 {
 
 .plan-card-badge {
   font-size: 12px;
-  padding: 4px 8px;
+  font-weight: 600;
+  padding: 4px 10px;
   border-radius: 999px;
   background: #eef2f7;
   color: var(--text-muted);
@@ -310,8 +315,9 @@ h2 {
   color: var(--danger);
   border: 1px solid #f0c4c0;
   border-radius: 6px;
-  padding: 4px 8px;
+  padding: 4px 10px;
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
 }
 
