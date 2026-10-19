@@ -753,14 +753,47 @@ textarea {
 .log-item-tag {
   padding: 4px 10px;
   border-radius: 999px;
+  background: var(--bubble);
   color: white;
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Once a day is logged, the run type steps back (pastel, like past days on the calendar)
+   and what actually happened becomes the most prominent thing in the row. */
+.log-item-tag--done {
+  background: color-mix(in srgb, var(--bubble) 26%, white);
+  color: var(--text);
 }
 
 .log-item-amount {
   font-size: 14px;
   font-weight: 600;
+}
+
+.log-item-amount--actual {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.log-item-amount--skipped {
+  color: var(--text-muted);
+}
+
+.log-item-planned {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.log-item--today {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.builder-week {
+  scroll-margin-top: calc(12px + env(safe-area-inset-top));
 }
 
 .log-item-right {
@@ -769,12 +802,6 @@ textarea {
   align-items: center;
   gap: 12px;
   text-align: right;
-}
-
-.log-item-actual {
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
 }
 
 .log-item-status {
@@ -880,14 +907,26 @@ textarea {
     display: inline;
   }
 
+  /* Same two-line layout for every row: date + run type, then mileage + note. */
   .log-item-header {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 10px;
     row-gap: 6px;
+  }
+
+  .log-item-date {
+    width: auto;
+  }
+
+  .log-item-tag {
+    justify-self: end;
   }
 
   .log-item-right {
     margin-left: 0;
-    width: 100%;
+    justify-content: flex-end;
   }
 }
 

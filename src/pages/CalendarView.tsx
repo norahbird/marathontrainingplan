@@ -11,16 +11,18 @@ import {
 } from 'date-fns';
 import { CSSProperties, useState } from 'react';
 import { PlanDay, TrainingPlan } from '../types';
-import { fromISODate, toISODate, weekdayLabels } from '../utils/dates';
+import { clampToPlan, fromISODate, toISODate, todayISODate, weekdayLabels } from '../utils/dates';
 import { calendarBubble, PURPOSE_COLORS, RACE_DAY_COLOR, REST_COLOR } from '../utils/display';
 
 export default function CalendarView({ plan }: { plan: TrainingPlan }) {
   const weekStartsOn = plan.weekStartsOn ?? 0;
-  const firstDay = fromISODate(plan.days[0].date);
-  const [monthCursor, setMonthCursor] = useState(startOfMonth(firstDay));
+  const todayISO = todayISODate();
+  // Open on the current month (or the plan's first/last month if today is outside it).
+  const [monthCursor, setMonthCursor] = useState(() =>
+    startOfMonth(fromISODate(clampToPlan(plan.days, todayISO))),
+  );
 
   const dayByDate = new Map<string, PlanDay>(plan.days.map((d) => [d.date, d]));
-  const todayISO = toISODate(new Date());
 
   const gridStart = startOfWeek(startOfMonth(monthCursor), { weekStartsOn });
   const gridEnd = endOfWeek(endOfMonth(monthCursor), { weekStartsOn });

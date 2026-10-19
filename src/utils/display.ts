@@ -119,6 +119,50 @@ export function calendarBubble(day: PlanDay, raceDistance: string): CalendarBubb
   return { label: `✓ ${planned.label}`, shortLabel: `✓ ${planned.shortLabel}`, color };
 }
 
+export interface LogRowSummary {
+  tag: string;
+  color: string;
+  /** The prominent text: the plan until the day is logged, then what actually happened. */
+  main: string;
+  /** Smaller text: logging status before, the original plan after. */
+  secondary: string;
+  logged: boolean;
+  skipped: boolean;
+}
+
+export function logRowSummary(day: PlanDay, raceDistance: string): LogRowSummary {
+  const log = day.log;
+  const plannedText = day.dayType === 'race' ? raceDayDistanceText(raceDistance) : dayCellLabel(day);
+  const plannedTag =
+    day.dayType === 'rest' ? 'Rest' : day.dayType === 'race' ? RACE_DAY_TAG : (day.run?.purpose ?? '—');
+
+  if (!log) {
+    return {
+      tag: plannedTag,
+      color: dayColor(day),
+      main: plannedText,
+      secondary: day.dayType === 'run' ? 'Not logged yet' : '',
+      logged: false,
+      skipped: false,
+    };
+  }
+
+  const ranOnRestDay = log.status === 'extra_run' && day.dayType === 'rest';
+  const extraPurpose = log.extraPurpose ?? 'General Aerobic';
+  const tag = ranOnRestDay ? extraPurpose : plannedTag;
+  const color = ranOnRestDay ? PURPOSE_COLORS[extraPurpose] : dayColor(day);
+  const plannedNote = ranOnRestDay ? 'Ran instead of resting' : `Planned: ${plannedText}`;
+
+  if (log.status === 'skipped') {
+    return { tag, color, main: 'Skipped', secondary: plannedNote, logged: true, skipped: true };
+  }
+  const actual = dayActualMiles(day);
+  return actual !== undefined
+    ? { tag, color, main: `✓ ${formatMiles(actual)} miles`, secondary: plannedNote, logged: true, skipped: false }
+    : // Completed with nothing to compare (e.g. a time-based run): the plan is what happened.
+      { tag, color, main: `✓ ${plannedText}`, secondary: ranOnRestDay ? plannedNote : '', logged: true, skipped: false };
+}
+
 function formatNumber(n: number | undefined): string {
   if (n === undefined) return '';
   return Number.isInteger(n) ? String(n) : n.toFixed(1);

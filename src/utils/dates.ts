@@ -85,6 +85,23 @@ export function groupIntoWeeks(days: PlanDay[], weekStartsOn: WeekStartsOn): Pla
   return weeks;
 }
 
+export function todayISODate(): string {
+  return toISODate(new Date());
+}
+
+/** Clamps a date into the plan's range: before the plan → first day, after it → race day. */
+export function clampToPlan(days: PlanDay[], iso: string): string {
+  const first = days[0].date;
+  const last = days[days.length - 1].date;
+  return iso < first ? first : iso > last ? last : iso;
+}
+
+/** Index of the week containing the given date (clamped into the plan's range). */
+export function weekIndexFor(weeks: PlanDay[][], iso: string): number {
+  const target = clampToPlan(weeks.flat(), iso);
+  return Math.max(0, weeks.findIndex((week) => week.some((d) => d.date === target)));
+}
+
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function weekdayLabels(weekStartsOn: WeekStartsOn): string[] {
