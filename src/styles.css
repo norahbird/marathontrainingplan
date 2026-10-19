@@ -698,7 +698,9 @@ textarea {
   font-weight: 600;
 }
 
-.calendar-cell.past .calendar-cell-bubble {
+/* Past days, and any day already logged (including today), step back to pastel. */
+.calendar-cell.past .calendar-cell-bubble,
+.calendar-cell-bubble--done {
   background: color-mix(in srgb, var(--bubble) 26%, white);
   color: var(--text);
 }
