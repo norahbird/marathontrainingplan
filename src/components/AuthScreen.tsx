@@ -55,7 +55,7 @@ export default function AuthScreen() {
   return (
     <div className="auth-screen">
       <div className="card auth-card">
-        <h1>Marathon Training Plan</h1>
+        <h1>Run Planner</h1>
         <p className="auth-subtitle">{SUBTITLES[mode]}</p>
         <form onSubmit={handleSubmit}>
           <div className="field">

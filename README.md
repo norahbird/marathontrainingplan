@@ -1,6 +1,6 @@
-# Marathon Training Plan
+# Run Planner
 
-Build day-by-day training plans for a goal race, then log what you actually ran against them.
+Build day-by-day running training plans for a goal race (5K to marathon and beyond), then log what you actually ran against them.
 
 - **Accounts:** sign in with email and password. Plans are saved to your account, so they appear on every device you sign in on. Each account can only see its own plans.
 - **Plan builder:** set the race, goal time, plan length and week start day, then fill in each day as a run (distance or time, purpose, description) or rest. Race day is added automatically.

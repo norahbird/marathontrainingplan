@@ -25,7 +25,7 @@ export default function App() {
     <div className="app-shell">
       <header className="app-header">
         <Link to="/" className="app-title">
-          Marathon Training Plan
+          Run Planner
         </Link>
         <div className="app-account">
           <span className="app-account-email">{user.email}</span>
