@@ -6,11 +6,11 @@
 </linearGradient>
 </defs>
 <rect width="512" height="512" fill="url(#bg)"/>
-<rect x="88" y="187" width="82" height="20" rx="10" fill="#d4b30a"/>
-<rect x="57" y="219" width="104" height="20" rx="10" fill="#e07b1a"/>
-<rect x="78" y="251" width="74" height="20" rx="10" fill="#7d3c9e"/>
-<rect x="47" y="283" width="96" height="20" rx="10" fill="#c0392b"/>
-<rect x="68" y="315" width="66" height="20" rx="10" fill="#d6336c"/>
+<rect x="109" y="169" width="110" height="16" rx="8" fill="#d4b30a"/>
+<rect x="78" y="195" width="134" height="16" rx="8" fill="#e07b1a"/>
+<rect x="100" y="221" width="104" height="16" rx="8" fill="#7d3c9e"/>
+<rect x="66" y="247" width="126" height="16" rx="8" fill="#c0392b"/>
+<rect x="87" y="273" width="96" height="16" rx="8" fill="#d6336c"/>
 <g transform="translate(36 -16) scale(0.9) rotate(16 312 300)">
 <path d="M156,348 L156,258 C156,232 170,216 194,216 L220,220 C228,240 250,246 268,234 L296,202 C302,194 314,194 318,204 L332,228 C366,256 404,274 438,288 C460,298 470,308 470,322 L460,348 L156,348 Z" fill="#ffffff"/>
 <path d="M150,344 L420,342 C446,340 462,332 472,322 C482,336 478,356 460,368 C442,380 414,386 386,386 L172,390 C152,390 144,378 146,362 Z" fill="#cfe0f2"/>
