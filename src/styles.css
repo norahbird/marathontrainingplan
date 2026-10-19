@@ -908,8 +908,9 @@ textarea {
   }
 
   .calendar-cell-bubble {
-    padding: 3px 4px;
+    padding: 3px 2px;
     font-size: 10px;
+    letter-spacing: -0.2px;
   }
 
   .label-full {

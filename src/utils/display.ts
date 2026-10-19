@@ -70,7 +70,7 @@ export function dayCellLabel(day: PlanDay): string {
 
 /**
  * Compact calendar label for narrow screens. Distances are bare numbers (miles are implied)
- * so they fit on one line, e.g. "6", "Race 13.1"; times keep their unit, e.g. "30 min".
+ * so they fit on one line, e.g. "6", "Race 13.1"; times get a one-letter unit, e.g. "30m".
  */
 export function dayCellShortLabel(day: PlanDay, raceDistance: string): string {
   if (day.dayType === 'rest') return 'Rest';
@@ -81,10 +81,13 @@ export function dayCellShortLabel(day: PlanDay, raceDistance: string): string {
   if (day.dayType === 'run' && day.run) {
     return day.run.metric === 'distance'
       ? formatNumber(day.run.distanceMiles)
-      : `${formatNumber(day.run.timeMinutes)} min`;
+      : `${formatNumber(day.run.timeMinutes)}m`;
   }
   return '';
 }
+
+// Narrow no-break space: keeps "✓ 30m" on one line in the tight phone calendar cells.
+const SHORT_CHECK = '✓\u202f';
 
 export interface CalendarBubble {
   label: string;
@@ -113,10 +116,10 @@ export function calendarBubble(day: PlanDay, raceDistance: string): CalendarBubb
       : planned.color;
   const actual = dayActualMiles(day);
   if (actual !== undefined) {
-    return { label: `✓ ${formatMiles(actual)} miles`, shortLabel: `✓ ${formatMiles(actual)}`, color };
+    return { label: `✓ ${formatMiles(actual)} miles`, shortLabel: `${SHORT_CHECK}${formatMiles(actual)}`, color };
   }
   // Logged but no distance to show (e.g. a completed time-based run).
-  return { label: `✓ ${planned.label}`, shortLabel: `✓ ${planned.shortLabel}`, color };
+  return { label: `✓ ${planned.label}`, shortLabel: `${SHORT_CHECK}${planned.shortLabel}`, color };
 }
 
 export interface LogRowSummary {
