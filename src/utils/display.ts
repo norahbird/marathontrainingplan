@@ -61,6 +61,13 @@ export function dayPlannedMiles(day: PlanDay, raceDistance: string): number | un
   return undefined;
 }
 
+/** A time-based run's logged minutes, or undefined if none were entered (or it was skipped). */
+export function dayActualMinutes(day: PlanDay): number | undefined {
+  const log = day.log;
+  if (!log || log.status === 'skipped' || day.run?.metric !== 'time') return undefined;
+  return log.actualTimeMinutes;
+}
+
 export function actualMiles(days: PlanDay[]): number {
   return days.reduce((total, day) => total + (dayActualMiles(day) ?? 0), 0);
 }
@@ -126,6 +133,16 @@ export function calendarBubble(day: PlanDay, raceDistance: string): CalendarBubb
     log.status === 'extra_run' && day.dayType === 'rest'
       ? PURPOSE_COLORS[log.extraPurpose ?? 'General Aerobic']
       : planned.color;
+  const minutes = dayActualMinutes(day);
+  if (minutes !== undefined) {
+    const target = day.run?.timeMinutes;
+    return {
+      label: `✓ ${formatNumber(minutes)} minutes`,
+      shortLabel: `${SHORT_CHECK}${formatNumber(minutes)}m`,
+      color,
+      short: target !== undefined && minutes < target,
+    };
+  }
   const actual = dayActualMiles(day);
   if (actual !== undefined) {
     const target = dayPlannedMiles(day, raceDistance);
@@ -173,6 +190,10 @@ export function logRowSummary(day: PlanDay, raceDistance: string): LogRowSummary
 
   if (log.status === 'skipped') {
     return { tag, color, main: 'Skipped', secondary: plannedNote, logged: true, skipped: true };
+  }
+  const minutes = dayActualMinutes(day);
+  if (minutes !== undefined) {
+    return { tag, color, main: `✓ ${formatNumber(minutes)} minutes`, secondary: plannedNote, logged: true, skipped: false };
   }
   const actual = dayActualMiles(day);
   return actual !== undefined

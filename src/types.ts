@@ -26,6 +26,8 @@ export interface RunLog {
   /** Only set when status === 'extra_run' on a day that was planned as rest. */
   extraPurpose?: RunPurpose;
   actualDistanceMiles?: number;
+  /** Only used for runs planned by time. */
+  actualTimeMinutes?: number;
   shoes?: string;
   notes?: string;
   intervalTimes?: string[];

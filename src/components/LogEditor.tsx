@@ -13,6 +13,8 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
 
   const plannedDistance =
     isRunDay && day.run?.metric === 'distance' ? day.run.distanceMiles : undefined;
+  const isTimeRun = isRunDay && day.run?.metric === 'time';
+  const plannedMinutes = isTimeRun ? day.run?.timeMinutes : undefined;
 
   const [ranInstead, setRanInstead] = useState(!isRunDay && existing?.status === 'extra_run');
   const [status, setStatus] = useState<LogStatus | null>(existing?.status ?? null);
@@ -20,6 +22,11 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
   const [actualDistanceMiles, setActualDistanceMiles] = useState<string>(() => {
     if (existing?.actualDistanceMiles !== undefined) return String(existing.actualDistanceMiles);
     if (existing?.status === 'completed' && plannedDistance !== undefined) return String(plannedDistance);
+    return '';
+  });
+  const [actualTimeMinutes, setActualTimeMinutes] = useState<string>(() => {
+    if (existing?.actualTimeMinutes !== undefined) return String(existing.actualTimeMinutes);
+    if (existing?.status === 'completed' && plannedMinutes !== undefined) return String(plannedMinutes);
     return '';
   });
   const [shoes, setShoes] = useState(existing?.shoes ?? '');
@@ -36,6 +43,7 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
       intervalTimes: string[];
       extraPurpose: RunPurpose;
       actualDistanceMiles: string;
+      actualTimeMinutes: string;
     }> = {},
   ) {
     const nextRanInstead = next.ranInstead ?? ranInstead;
@@ -43,6 +51,7 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
     const nextIntervalTimes = next.intervalTimes ?? intervalTimes;
     const nextExtraPurpose = next.extraPurpose ?? extraPurpose;
     const nextDistance = next.actualDistanceMiles ?? actualDistanceMiles;
+    const nextMinutes = next.actualTimeMinutes ?? actualTimeMinutes;
 
     if (!isRunDay && !nextRanInstead) {
       onSave(undefined);
@@ -54,6 +63,7 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
       status: isRunDay ? nextStatus! : 'extra_run',
       extraPurpose: isRunDay ? undefined : nextExtraPurpose,
       actualDistanceMiles: nextDistance.trim() ? Number(nextDistance) : undefined,
+      actualTimeMinutes: isTimeRun && nextMinutes.trim() ? Number(nextMinutes) : undefined,
       shoes: shoes.trim() || undefined,
       notes: notes.trim() || undefined,
       intervalTimes:
@@ -123,13 +133,17 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
                 checked={status === 'completed'}
                 onChange={() => {
                   setStatus('completed');
+                  // Start from the plan; edit it down if the run came up short.
+                  const prefill: { actualDistanceMiles?: string; actualTimeMinutes?: string } = {};
                   if (!actualDistanceMiles.trim() && plannedDistance !== undefined) {
-                    const prefill = String(plannedDistance);
-                    setActualDistanceMiles(prefill);
-                    persist({ status: 'completed', actualDistanceMiles: prefill });
-                  } else {
-                    persist({ status: 'completed' });
+                    prefill.actualDistanceMiles = String(plannedDistance);
+                    setActualDistanceMiles(prefill.actualDistanceMiles);
                   }
+                  if (!actualTimeMinutes.trim() && plannedMinutes !== undefined) {
+                    prefill.actualTimeMinutes = String(plannedMinutes);
+                    setActualTimeMinutes(prefill.actualTimeMinutes);
+                  }
+                  persist({ status: 'completed', ...prefill });
                 }}
               />
               Completed
@@ -169,6 +183,22 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {isTimeRun && (
+            <div className="field">
+              <label htmlFor="actual-time">Actual time (minutes)</label>
+              <input
+                id="actual-time"
+                type="number"
+                min={0}
+                step={1}
+                inputMode="numeric"
+                value={actualTimeMinutes}
+                onChange={(e) => setActualTimeMinutes(e.target.value)}
+                onBlur={() => persist()}
+              />
             </div>
           )}
 
