@@ -1,5 +1,6 @@
 import type { PlanDay, RunPurpose } from '../types';
 import { RACE_DISTANCE_MILES } from './pace';
+import { loggedPurpose, workoutDetail } from './workouts';
 
 export const PURPOSE_COLORS: Record<RunPurpose, string> = {
   'General Aerobic': '#2f6fb3',
@@ -163,6 +164,8 @@ export interface LogRowSummary {
   secondary: string;
   logged: boolean;
   skipped: boolean;
+  /** Logged workout details, e.g. "6 × 800m · avg 6:48 /mi". */
+  detail?: string;
 }
 
 export function logRowSummary(day: PlanDay, raceDistance: string): LogRowSummary {
@@ -191,15 +194,16 @@ export function logRowSummary(day: PlanDay, raceDistance: string): LogRowSummary
   if (log.status === 'skipped') {
     return { tag, color, main: 'Skipped', secondary: plannedNote, logged: true, skipped: true };
   }
+  const detail = workoutDetail(loggedPurpose(day), log);
   const minutes = dayActualMinutes(day);
   if (minutes !== undefined) {
-    return { tag, color, main: `✓ ${formatNumber(minutes)} minutes`, secondary: plannedNote, logged: true, skipped: false };
+    return { tag, color, main: `✓ ${formatNumber(minutes)} minutes`, secondary: plannedNote, logged: true, skipped: false, detail };
   }
   const actual = dayActualMiles(day);
   return actual !== undefined
-    ? { tag, color, main: `✓ ${formatMiles(actual)} miles`, secondary: plannedNote, logged: true, skipped: false }
+    ? { tag, color, main: `✓ ${formatMiles(actual)} miles`, secondary: plannedNote, logged: true, skipped: false, detail }
     : // Completed with nothing to compare (e.g. a time-based run): the plan is what happened.
-      { tag, color, main: `✓ ${plannedText}`, secondary: ranOnRestDay ? plannedNote : '', logged: true, skipped: false };
+      { tag, color, main: `✓ ${plannedText}`, secondary: ranOnRestDay ? plannedNote : '', logged: true, skipped: false, detail };
 }
 
 function formatNumber(n: number | undefined): string {

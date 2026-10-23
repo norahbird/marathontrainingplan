@@ -61,6 +61,7 @@ export default function ScrollView({ plan, onUpdateDay }: Props) {
                         <span className={row.logged ? 'log-item-planned' : 'log-item-status'}>{row.secondary}</span>
                       </span>
                     )}
+                    {row.detail && <span className="log-item-detail">{row.detail}</span>}
                   </div>
 
                   {isOpen && (

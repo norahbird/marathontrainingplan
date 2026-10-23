@@ -21,6 +21,41 @@ export interface PlannedRun {
 
 export type LogStatus = 'completed' | 'skipped' | 'extra_run';
 
+export const INTERVAL_KINDS = ['400m', '800m', '1200m', '1mi', 'custom', 'time'] as const;
+export type IntervalKind = (typeof INTERVAL_KINDS)[number];
+
+/** One interval rep. Distance reps record their time; time reps record the distance covered. */
+export interface IntervalRep {
+  /** Missing only on reps carried over from the old free-text interval times. */
+  kind?: IntervalKind;
+  /** How long the rep took (or lasted, for a time rep), in seconds. */
+  seconds?: number;
+  /** For 'custom' reps. */
+  customDistance?: number;
+  customUnit?: 'm' | 'mi';
+  /** Distance covered on a 'time' rep. */
+  distanceMiles?: number;
+}
+
+export const LONG_RUN_WORKOUT_KINDS = ['Progression', 'Race Pace'] as const;
+export type LongRunWorkoutKind = (typeof LONG_RUN_WORKOUT_KINDS)[number];
+
+export interface LongRunWorkout {
+  kind: LongRunWorkoutKind;
+  measure: 'distance' | 'time';
+  distanceMiles?: number;
+  seconds?: number;
+  /** Average pace, in seconds per mile. */
+  paceSeconds?: number;
+}
+
+/** Strides are always 30 seconds each, so only the count and pace are logged. */
+export interface StridesLog {
+  count?: number;
+  /** Seconds per mile. */
+  paceSeconds?: number;
+}
+
 export interface RunLog {
   status: LogStatus;
   /** Only set when status === 'extra_run' on a day that was planned as rest. */
@@ -30,7 +65,14 @@ export interface RunLog {
   actualTimeMinutes?: number;
   shoes?: string;
   notes?: string;
+  /** Old free-text interval times. New logs use `intervals`; kept for entries that couldn't be converted. */
   intervalTimes?: string[];
+  /** Threshold runs: pace of each threshold section, in seconds per mile. */
+  thresholdPaces?: number[];
+  intervals?: IntervalRep[];
+  longRunWorkouts?: LongRunWorkout[];
+  /** General Aerobic runs. */
+  strides?: StridesLog;
 }
 
 export type DayType = 'run' | 'rest' | 'race';

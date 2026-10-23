@@ -754,6 +754,7 @@ textarea {
 
 .log-item-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
@@ -972,14 +973,145 @@ textarea {
   margin-top: 6px;
 }
 
-.interval-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+/* Logged workout details under a log row, e.g. "6 × 800m · avg 6:48 /mi". */
+.log-item-detail {
+  flex-basis: 100%;
+  grid-column: 1 / -1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
-.interval-row input {
-  flex: 1;
+/* Workout fields in the run logger */
+.workout-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rep {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rep-top,
+.rep-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rep-num {
+  min-width: 16px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.rep-title {
+  font-weight: 700;
+}
+
+.rep-top select {
+  width: auto;
+  flex: 1 1 auto;
+}
+
+.rep-pace {
+  margin-left: auto;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rep-remove {
+  margin-left: auto;
+}
+
+.field .inline-label,
+.inline-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.unit {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.minsec {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.minsec input[type='text'],
+.rep-line input.num-input {
+  width: 58px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.rep-line input.num-input {
+  width: 72px;
+}
+
+.rep-line input.num-input--short {
+  width: 48px;
+}
+
+.minsec-colon {
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.seg-btn {
+  border: none;
+  background: var(--surface);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.seg-btn + .seg-btn {
+  border-left: 1px solid var(--border);
+}
+
+.seg-btn.active {
+  background: var(--accent);
+  color: white;
+}
+
+.add-workout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-small {
+  padding: 6px 10px;
+  font-size: 13px;
 }
 
 /* Very narrow phones (e.g. original iPhone SE): tighten so "✓ 13.1" still fits on one line.

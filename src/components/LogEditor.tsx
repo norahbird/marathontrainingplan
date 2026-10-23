@@ -1,5 +1,20 @@
 import { useState } from 'react';
 import { LogStatus, PlanDay, RUN_PURPOSES, RunLog, RunPurpose } from '../types';
+import { IntervalFields, LongRunFields, StridesFields, ThresholdFields } from './WorkoutFields';
+import {
+  IntervalDraft,
+  intervalDrafts,
+  intervalsFromDrafts,
+  MinSecDraft,
+  StridesDraft,
+  stridesDraft,
+  stridesFromDraft,
+  thresholdDrafts,
+  thresholdFromDrafts,
+  WorkoutDraft,
+  workoutDrafts,
+  workoutsFromDrafts,
+} from './workoutDrafts';
 
 interface Props {
   day: PlanDay;
@@ -31,24 +46,29 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
   });
   const [shoes, setShoes] = useState(existing?.shoes ?? '');
   const [notes, setNotes] = useState(existing?.notes ?? '');
-  const [intervalTimes, setIntervalTimes] = useState<string[]>(existing?.intervalTimes ?? ['']);
+  const [thresholdPaces, setThresholdPaces] = useState<MinSecDraft[]>(() => thresholdDrafts(existing));
+  const [initialIntervals] = useState(() => intervalDrafts(existing));
+  const [intervals, setIntervals] = useState<IntervalDraft[]>(initialIntervals.rows);
+  const [workouts, setWorkouts] = useState<WorkoutDraft[]>(() => workoutDrafts(existing));
+  const [strides, setStrides] = useState<StridesDraft | null>(() => stridesDraft(existing));
 
   const effectivePurpose: RunPurpose | undefined = isRunDay ? day.run?.purpose : extraPurpose;
-  const showIntervalTimes = effectivePurpose === 'Intervals' && (isRunDay ? status === 'completed' : ranInstead);
 
   function persist(
     next: Partial<{
       status: LogStatus;
       ranInstead: boolean;
-      intervalTimes: string[];
       extraPurpose: RunPurpose;
       actualDistanceMiles: string;
       actualTimeMinutes: string;
+      thresholdPaces: MinSecDraft[];
+      intervals: IntervalDraft[];
+      workouts: WorkoutDraft[];
+      strides: StridesDraft | null;
     }> = {},
   ) {
     const nextRanInstead = next.ranInstead ?? ranInstead;
     const nextStatus = next.status ?? status;
-    const nextIntervalTimes = next.intervalTimes ?? intervalTimes;
     const nextExtraPurpose = next.extraPurpose ?? extraPurpose;
     const nextDistance = next.actualDistanceMiles ?? actualDistanceMiles;
     const nextMinutes = next.actualTimeMinutes ?? actualTimeMinutes;
@@ -59,6 +79,9 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
     }
     if (isRunDay && !nextStatus) return;
 
+    // Workout details only belong to a run that happened, and only for its run type.
+    const purpose = isRunDay ? day.run?.purpose : nextExtraPurpose;
+    const ran = !isRunDay || nextStatus === 'completed';
     const log: RunLog = {
       status: isRunDay ? nextStatus! : 'extra_run',
       extraPurpose: isRunDay ? undefined : nextExtraPurpose,
@@ -67,27 +90,13 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
       shoes: shoes.trim() || undefined,
       notes: notes.trim() || undefined,
       intervalTimes:
-        (isRunDay ? day.run?.purpose : nextExtraPurpose) === 'Intervals'
-          ? nextIntervalTimes.filter((t) => t.trim() !== '')
-          : undefined,
+        ran && purpose === 'Intervals' && initialIntervals.leftovers.length ? initialIntervals.leftovers : undefined,
+      thresholdPaces: ran && purpose === 'Threshold' ? thresholdFromDrafts(next.thresholdPaces ?? thresholdPaces) : undefined,
+      intervals: ran && purpose === 'Intervals' ? intervalsFromDrafts(next.intervals ?? intervals) : undefined,
+      longRunWorkouts: ran && purpose === 'Long Run' ? workoutsFromDrafts(next.workouts ?? workouts) : undefined,
+      strides: ran && purpose === 'General Aerobic' ? stridesFromDraft(next.strides !== undefined ? next.strides : strides) : undefined,
     };
     onSave(log);
-  }
-
-  function updateInterval(idx: number, value: string) {
-    const next = [...intervalTimes];
-    next[idx] = value;
-    setIntervalTimes(next);
-  }
-
-  function addInterval() {
-    setIntervalTimes([...intervalTimes, '']);
-  }
-
-  function removeInterval(idx: number) {
-    const next = intervalTimes.filter((_, i) => i !== idx);
-    setIntervalTimes(next);
-    persist({ intervalTimes: next });
   }
 
   function handleSaveAndClose() {
@@ -96,9 +105,12 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
   }
 
   function handleRemoveLog() {
+    const log = day.log;
     const hasDetails =
-      shoes.trim() !== '' || notes.trim() !== '' || intervalTimes.some((t) => t.trim() !== '');
-    if (hasDetails && !confirm('Remove this log? Your shoes, notes, and interval times for this day will be cleared.')) {
+      shoes.trim() !== '' ||
+      notes.trim() !== '' ||
+      Boolean(log?.intervalTimes?.length || log?.thresholdPaces || log?.intervals || log?.longRunWorkouts || log?.strides);
+    if (hasDetails && !confirm('Remove this log? Your shoes, notes, and workout details for this day will be cleared.')) {
       return;
     }
     onSave(undefined);
@@ -215,6 +227,48 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
             />
           </div>
 
+          {effectivePurpose === 'Threshold' && (
+            <ThresholdFields
+              value={thresholdPaces}
+              onChange={setThresholdPaces}
+              onCommit={(next) => {
+                setThresholdPaces(next);
+                persist({ thresholdPaces: next });
+              }}
+            />
+          )}
+          {effectivePurpose === 'Intervals' && (
+            <IntervalFields
+              value={intervals}
+              leftovers={initialIntervals.leftovers}
+              onChange={setIntervals}
+              onCommit={(next) => {
+                setIntervals(next);
+                persist({ intervals: next });
+              }}
+            />
+          )}
+          {effectivePurpose === 'Long Run' && (
+            <LongRunFields
+              value={workouts}
+              onChange={setWorkouts}
+              onCommit={(next) => {
+                setWorkouts(next);
+                persist({ workouts: next });
+              }}
+            />
+          )}
+          {effectivePurpose === 'General Aerobic' && (
+            <StridesFields
+              value={strides}
+              onChange={setStrides}
+              onCommit={(next) => {
+                setStrides(next);
+                persist({ strides: next });
+              }}
+            />
+          )}
+
           <div className="field">
             <label htmlFor="shoes">Shoes</label>
             <input
@@ -237,28 +291,6 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
             />
           </div>
 
-          {showIntervalTimes && (
-            <div className="field">
-              <label>Interval times</label>
-              {intervalTimes.map((t, idx) => (
-                <div className="interval-row" key={idx}>
-                  <input
-                    type="text"
-                    placeholder={`Interval ${idx + 1} (e.g. 6:45)`}
-                    value={t}
-                    onChange={(e) => updateInterval(idx, e.target.value)}
-                    onBlur={() => persist()}
-                  />
-                  <button type="button" className="btn-danger" onClick={() => removeInterval(idx)}>
-                    Remove
-                  </button>
-                </div>
-              ))}
-              <button type="button" className="btn-link" onClick={addInterval}>
-                + Add interval
-              </button>
-            </div>
-          )}
         </>
       )}
 
