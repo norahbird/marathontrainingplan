@@ -87,9 +87,13 @@ function workoutSummary(w: LongRunWorkout): string {
   return `${w.kind}${amount}${pace}`;
 }
 
-/** The run type a log's workout details belong to: the plan's, or the extra run's on a rest day. */
+/**
+ * The run type that was actually run: the extra run's on a rest day, the logged type when a planned
+ * run was done as something else, otherwise the plan's.
+ */
 export function loggedPurpose(day: PlanDay): RunPurpose | undefined {
   if (day.log?.status === 'extra_run' && day.dayType === 'rest') return day.log.extraPurpose ?? 'General Aerobic';
+  if (day.log?.status === 'completed' && day.log.actualPurpose) return day.log.actualPurpose;
   return day.run?.purpose;
 }
 

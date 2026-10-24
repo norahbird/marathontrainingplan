@@ -34,6 +34,9 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
   const [ranInstead, setRanInstead] = useState(!isRunDay && existing?.status === 'extra_run');
   const [status, setStatus] = useState<LogStatus | null>(existing?.status ?? null);
   const [extraPurpose, setExtraPurpose] = useState<RunPurpose>(existing?.extraPurpose ?? 'General Aerobic');
+  const plannedPurpose = isRunDay ? day.run?.purpose : undefined;
+  // The type actually run on a planned run day; starts as the plan.
+  const [actualPurpose, setActualPurpose] = useState<RunPurpose | undefined>(existing?.actualPurpose ?? plannedPurpose);
   const [actualDistanceMiles, setActualDistanceMiles] = useState<string>(() => {
     if (existing?.actualDistanceMiles !== undefined) return String(existing.actualDistanceMiles);
     if (existing?.status === 'completed' && plannedDistance !== undefined) return String(plannedDistance);
@@ -52,13 +55,14 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
   const [workouts, setWorkouts] = useState<WorkoutDraft[]>(() => workoutDrafts(existing));
   const [strides, setStrides] = useState<StridesDraft | null>(() => stridesDraft(existing));
 
-  const effectivePurpose: RunPurpose | undefined = isRunDay ? day.run?.purpose : extraPurpose;
+  const effectivePurpose: RunPurpose | undefined = isRunDay ? actualPurpose : extraPurpose;
 
   function persist(
     next: Partial<{
       status: LogStatus;
       ranInstead: boolean;
       extraPurpose: RunPurpose;
+      actualPurpose: RunPurpose;
       actualDistanceMiles: string;
       actualTimeMinutes: string;
       thresholdPaces: MinSecDraft[];
@@ -70,6 +74,7 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
     const nextRanInstead = next.ranInstead ?? ranInstead;
     const nextStatus = next.status ?? status;
     const nextExtraPurpose = next.extraPurpose ?? extraPurpose;
+    const nextActualPurpose = next.actualPurpose ?? actualPurpose;
     const nextDistance = next.actualDistanceMiles ?? actualDistanceMiles;
     const nextMinutes = next.actualTimeMinutes ?? actualTimeMinutes;
 
@@ -80,11 +85,12 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
     if (isRunDay && !nextStatus) return;
 
     // Workout details only belong to a run that happened, and only for its run type.
-    const purpose = isRunDay ? day.run?.purpose : nextExtraPurpose;
     const ran = !isRunDay || nextStatus === 'completed';
+    const purpose = isRunDay ? (ran ? nextActualPurpose : plannedPurpose) : nextExtraPurpose;
     const log: RunLog = {
       status: isRunDay ? nextStatus! : 'extra_run',
       extraPurpose: isRunDay ? undefined : nextExtraPurpose,
+      actualPurpose: isRunDay && ran && purpose !== plannedPurpose ? purpose : undefined,
       actualDistanceMiles: nextDistance.trim() ? Number(nextDistance) : undefined,
       actualTimeMinutes: isTimeRun && nextMinutes.trim() ? Number(nextMinutes) : undefined,
       shoes: shoes.trim() || undefined,
@@ -177,26 +183,29 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
 
       {((isRunDay && status === 'completed') || (!isRunDay && ranInstead)) && (
         <>
-          {!isRunDay && (
-            <div className="field">
-              <label htmlFor="extra-purpose">Type of run</label>
-              <select
-                id="extra-purpose"
-                value={extraPurpose}
-                onChange={(e) => {
-                  const value = e.target.value as RunPurpose;
+          <div className="field">
+            <label htmlFor="run-type">Type of run</label>
+            <select
+              id="run-type"
+              value={(isRunDay ? actualPurpose : extraPurpose) ?? ''}
+              onChange={(e) => {
+                const value = e.target.value as RunPurpose;
+                if (isRunDay) {
+                  setActualPurpose(value);
+                  persist({ actualPurpose: value });
+                } else {
                   setExtraPurpose(value);
                   persist({ extraPurpose: value });
-                }}
-              >
-                {RUN_PURPOSES.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+                }
+              }}
+            >
+              {RUN_PURPOSES.map((p) => (
+                <option key={p} value={p}>
+                  {p === plannedPurpose ? `${p} (planned)` : p}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {isTimeRun && (
             <div className="field">

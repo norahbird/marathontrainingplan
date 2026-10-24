@@ -60,6 +60,8 @@ export interface RunLog {
   status: LogStatus;
   /** Only set when status === 'extra_run' on a day that was planned as rest. */
   extraPurpose?: RunPurpose;
+  /** Set when a planned run was completed as a different type (e.g. planned Recovery, ran Threshold). */
+  actualPurpose?: RunPurpose;
   actualDistanceMiles?: number;
   /** Only used for runs planned by time. */
   actualTimeMinutes?: number;

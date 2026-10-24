@@ -130,10 +130,9 @@ export function calendarBubble(day: PlanDay, raceDistance: string): CalendarBubb
   };
   if (!log) return planned;
 
-  const color =
-    log.status === 'extra_run' && day.dayType === 'rest'
-      ? PURPOSE_COLORS[log.extraPurpose ?? 'General Aerobic']
-      : planned.color;
+  // Logged as a different run type (or a run on a rest day): use that type's color.
+  const ranPurpose = loggedPurpose(day);
+  const color = ranPurpose && ranPurpose !== day.run?.purpose ? PURPOSE_COLORS[ranPurpose] : planned.color;
   const minutes = dayActualMinutes(day);
   if (minutes !== undefined) {
     const target = day.run?.timeMinutes;
@@ -186,10 +185,15 @@ export function logRowSummary(day: PlanDay, raceDistance: string): LogRowSummary
   }
 
   const ranOnRestDay = log.status === 'extra_run' && day.dayType === 'rest';
-  const extraPurpose = log.extraPurpose ?? 'General Aerobic';
-  const tag = ranOnRestDay ? extraPurpose : plannedTag;
-  const color = ranOnRestDay ? PURPOSE_COLORS[extraPurpose] : dayColor(day);
-  const plannedNote = ranOnRestDay ? 'Ran instead of resting' : `Planned: ${plannedText}`;
+  const ranPurpose = loggedPurpose(day);
+  const typeChanged = !ranOnRestDay && ranPurpose !== undefined && ranPurpose !== day.run?.purpose;
+  const tag = ranOnRestDay || typeChanged ? ranPurpose! : plannedTag;
+  const color = ranOnRestDay || typeChanged ? PURPOSE_COLORS[ranPurpose!] : dayColor(day);
+  const plannedNote = ranOnRestDay
+    ? 'Ran instead of resting'
+    : typeChanged
+      ? `Planned: ${day.run?.purpose}, ${plannedText}`
+      : `Planned: ${plannedText}`;
 
   if (log.status === 'skipped') {
     return { tag, color, main: 'Skipped', secondary: plannedNote, logged: true, skipped: true };
@@ -203,7 +207,7 @@ export function logRowSummary(day: PlanDay, raceDistance: string): LogRowSummary
   return actual !== undefined
     ? { tag, color, main: `✓ ${formatMiles(actual)} miles`, secondary: plannedNote, logged: true, skipped: false, detail }
     : // Completed with nothing to compare (e.g. a time-based run): the plan is what happened.
-      { tag, color, main: `✓ ${plannedText}`, secondary: ranOnRestDay ? plannedNote : '', logged: true, skipped: false, detail };
+      { tag, color, main: `✓ ${plannedText}`, secondary: ranOnRestDay || typeChanged ? plannedNote : '', logged: true, skipped: false, detail };
 }
 
 function formatNumber(n: number | undefined): string {
