@@ -1114,9 +1114,224 @@ textarea {
   font-size: 13px;
 }
 
+/* Dashboard under the calendar */
+.dashboard {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dash-heading {
+  margin: 0;
+  font-size: 18px;
+}
+
+.dash-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dash-tile,
+.dash-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.dash-tile-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.dash-tile-value {
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.dash-tile-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dash-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dash-title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.dash-summary,
+.dash-readout,
+.dash-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.dash-summary strong,
+.dash-readout strong {
+  color: var(--text);
+}
+
+.dash-readout {
+  min-height: 1.5em;
+}
+
+.dash-chart {
+  width: 100%;
+  overflow: hidden;
+}
+
+.dash-chart svg {
+  display: block;
+}
+
+.dash-axis {
+  font-size: 11px;
+  fill: var(--text-muted);
+}
+
+.dash-axis--strong {
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.dash-axis-caption {
+  margin: -4px 0 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.dash-hit {
+  cursor: pointer;
+}
+
+.dash-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dash-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dash-key {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.dash-key--fill {
+  background: var(--key);
+}
+
+.dash-key--outline {
+  border: 1.5px solid var(--key);
+  background: white;
+}
+
+.dash-key--dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--key);
+}
+
+.dash-key--line {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--key);
+}
+
+.dash-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dash-chip {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.dash-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .dash-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dash-tile-value {
+    font-size: 17px;
+  }
+}
+
+/* "How did it feel?" 1-5 scale */
+.feel-scale {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.feel-btn {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 10px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.feel-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.feel-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 /* Very narrow phones (e.g. original iPhone SE): tighten so "✓ 13.1" still fits on one line.
    Kept last so it overrides the 600px rules above. */
 @media (max-width: 340px) {
+  .dash-tile-value {
+    font-size: 15px;
+  }
+
   .app-main {
     padding-left: calc(10px + env(safe-area-inset-left));
     padding-right: calc(10px + env(safe-area-inset-right));

@@ -11,6 +11,7 @@ import {
 } from 'date-fns';
 import { CSSProperties, useState } from 'react';
 import { PlanDay, TrainingPlan } from '../types';
+import Dashboard from '../components/Dashboard';
 import { clampToPlan, fromISODate, toISODate, todayISODate, weekdayLabels } from '../utils/dates';
 import { calendarBubble, PURPOSE_COLORS, RACE_DAY_COLOR, REST_COLOR } from '../utils/display';
 
@@ -89,6 +90,7 @@ export default function CalendarView({ plan }: { plan: TrainingPlan }) {
           Race Day
         </span>
       </div>
+      <Dashboard plan={plan} />
     </div>
   );
 }

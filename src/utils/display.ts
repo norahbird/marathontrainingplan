@@ -198,7 +198,9 @@ export function logRowSummary(day: PlanDay, raceDistance: string): LogRowSummary
   if (log.status === 'skipped') {
     return { tag, color, main: 'Skipped', secondary: plannedNote, logged: true, skipped: true };
   }
-  const detail = workoutDetail(loggedPurpose(day), log);
+  const detail =
+    [workoutDetail(loggedPurpose(day), log), log.feel ? `Felt ${log.feel}/5` : undefined].filter(Boolean).join(' · ') ||
+    undefined;
   const minutes = dayActualMinutes(day);
   if (minutes !== undefined) {
     return { tag, color, main: `✓ ${formatNumber(minutes)} minutes`, secondary: plannedNote, logged: true, skipped: false, detail };

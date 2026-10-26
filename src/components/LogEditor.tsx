@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LogStatus, PlanDay, RUN_PURPOSES, RunLog, RunPurpose } from '../types';
+import { FeelRating, LogStatus, PlanDay, RUN_PURPOSES, RunLog, RunPurpose } from '../types';
 import { IntervalFields, LongRunFields, StridesFields, ThresholdFields } from './WorkoutFields';
 import {
   IntervalDraft,
@@ -47,6 +47,7 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
     if (existing?.status === 'completed' && plannedMinutes !== undefined) return String(plannedMinutes);
     return '';
   });
+  const [feel, setFeel] = useState<FeelRating | null>(existing?.feel ?? null);
   const [shoes, setShoes] = useState(existing?.shoes ?? '');
   const [notes, setNotes] = useState(existing?.notes ?? '');
   const [thresholdPaces, setThresholdPaces] = useState<MinSecDraft[]>(() => thresholdDrafts(existing));
@@ -69,6 +70,7 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
       intervals: IntervalDraft[];
       workouts: WorkoutDraft[];
       strides: StridesDraft | null;
+      feel: FeelRating | null;
     }> = {},
   ) {
     const nextRanInstead = next.ranInstead ?? ranInstead;
@@ -101,6 +103,7 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
       intervals: ran && purpose === 'Intervals' ? intervalsFromDrafts(next.intervals ?? intervals) : undefined,
       longRunWorkouts: ran && purpose === 'Long Run' ? workoutsFromDrafts(next.workouts ?? workouts) : undefined,
       strides: ran && purpose === 'General Aerobic' ? stridesFromDraft(next.strides !== undefined ? next.strides : strides) : undefined,
+      feel: ran ? ((next.feel !== undefined ? next.feel : feel) ?? undefined) : undefined,
     };
     onSave(log);
   }
@@ -277,6 +280,34 @@ export default function LogEditor({ day, onSave, onClose }: Props) {
               }}
             />
           )}
+
+          <div className="field">
+            <label id="feel-label">How did it feel?</label>
+            <div className="feel-scale" role="radiogroup" aria-labelledby="feel-label">
+              {([1, 2, 3, 4, 5] as FeelRating[]).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  role="radio"
+                  aria-checked={feel === n}
+                  aria-label={`${n}${n === 1 ? ' (very bad)' : n === 5 ? ' (very good)' : ''}`}
+                  className={`feel-btn${feel === n ? ' active' : ''}`}
+                  onClick={() => {
+                    // Tapping the chosen rating again clears it.
+                    const next = feel === n ? null : n;
+                    setFeel(next);
+                    persist({ feel: next });
+                  }}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            <div className="feel-ends">
+              <span>Very bad</span>
+              <span>Very good</span>
+            </div>
+          </div>
 
           <div className="field">
             <label htmlFor="shoes">Shoes</label>

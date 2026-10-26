@@ -5,6 +5,7 @@ Build day-by-day running training plans for a goal race (5K to marathon and beyo
 - **Accounts:** sign in with email and password. Plans are saved to your account, so they appear on every device you sign in on. Each account can only see its own plans.
 - **Plan builder:** set the race, goal time, plan length and week start day, then fill in each day as a run (distance or time, purpose, description) or rest. Race day is added automatically.
 - **Calendar and log:** after finalizing, see a color-coded calendar, or a weekly log where you record completed and skipped runs, actual distance (and time, for runs planned by time), shoes and notes, plus workout details by run type: threshold section paces, interval reps with calculated pace, long-run progression and race-pace segments, and strides, with planned and actual weekly mileage.
+- **Dashboard:** below the calendar, see miles and runs to date, weekly planned vs actual mileage, long-run progression, threshold and interval pace trends (faster is higher), and how runs have felt, from a 1–5 rating in the log.
 - **Backup:** export all plans to a JSON file, or import one, including backups from the earlier local-only version of the app.
 
 ## Setup

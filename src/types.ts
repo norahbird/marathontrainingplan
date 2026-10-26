@@ -21,6 +21,9 @@ export interface PlannedRun {
 
 export type LogStatus = 'completed' | 'skipped' | 'extra_run';
 
+/** How a run felt: 1 = very bad ... 5 = very good. */
+export type FeelRating = 1 | 2 | 3 | 4 | 5;
+
 export const INTERVAL_KINDS = ['400m', '800m', '1200m', '1mi', 'custom', 'time'] as const;
 export type IntervalKind = (typeof INTERVAL_KINDS)[number];
 
@@ -75,6 +78,7 @@ export interface RunLog {
   longRunWorkouts?: LongRunWorkout[];
   /** General Aerobic runs. */
   strides?: StridesLog;
+  feel?: FeelRating;
 }
 
 export type DayType = 'run' | 'rest' | 'race';
